@@ -2,6 +2,19 @@
 .venv/
 .runtime/
 
+# Conteúdo interno e fontes não publicáveis
+.data/
+.design/
+.agents/
+docs/
+AGENTS.md
+.DS_Store
+
+# Ambientes locais e dados gerados do dashboard
+dashboards/**/data.js
+dashboards/**/.build/
+dashboards/**/node_modules/
+
 # Jupyter / Python
 .ipynb_checkpoints/
 __pycache__/

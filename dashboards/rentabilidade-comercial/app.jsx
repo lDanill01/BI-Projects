@@ -2,7 +2,7 @@ import React, {useMemo, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import {ResponsiveContainer, AreaChart, Area, LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell, ScatterChart, Scatter, ZAxis} from 'recharts';
 
-const D = window.DASHBOARD_DATA;
+const D = window.DASHBOARD_DATA || window.DASHBOARD_SAMPLE_DATA;
 const COLORS = ['#118DFF','#12239E','#E66C37','#6B007B','#1AAB40','#D9B300','#D64554','#197278'];
 const tabs = [
   ['performance','Desempenho comercial'], ['clientes','Análise de clientes'], ['churn','Churn'], ['rfv','RFV'], ['segmentos','Segmentos']

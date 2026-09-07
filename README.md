@@ -1,53 +1,29 @@
-# Análise de dados — template
+# Projeto de análises comerciais em Python
 
-Projeto para análises de dados em Python: jogue seus dados na pasta `dados/` e o agente conduz a análise guiada, uma pergunta de cada vez.
+Projeto público de apresentação de análises comerciais em Python e dashboards interativos. A estrutura foi preparada para receber novos dados, notebooks e experiências de navegação sem publicar bases transacionais ou materiais internos.
 
-## Como usar
+## Comece por aqui
 
-1. Coloque seus dados em **`dados/`**.
-2. Abra o OpenCode na pasta do projeto e digite:
+- [Apresentação do projeto atual](apresentacao/PROJETO_ATUAL.md)
+- [Notebook de rentabilidade comercial](notebooks/rentabilidade-comercial/analise.ipynb)
+- [Dashboard executivo](dashboards/rentabilidade-comercial/index.html)
 
-   ```
-   /analise
-   ```
+O dashboard abre diretamente no navegador e usa dados sintéticos de demonstração quando a base local não está disponível. A base real e os agregados locais permanecem fora da publicação.
 
-   O OpenCode faz o resto: localiza os dados, faz perguntas sobre o objetivo e começa a análise.
+## Estrutura pública
 
-## Estrutura do projeto
+```text
+apresentacao/                     contexto e primeira interação
+notebooks/<tema>/                 análises reproduzíveis em Jupyter
+dashboards/<tema>/                interfaces HTML interativas
+```
 
-| Arquivo | Papel |
-|---|---|
-| `AGENTS.md` | Regras que valem **sempre** (célula curta, sem jargão, dashboards, gráficos, identidade visual). |
-| `.design/` | **Identidade visual** do projeto (paleta, tipografia, tokens, componentes). Tudo que estiver aqui prevalece sobre a paleta padrão e deve ser seguido pelos dashboards. Veja `.design/README.md`. |
-| `notebooks/<slug>/` | Cada análise é um notebook novo, em pasta própria. |
-| `dashboards/<slug>/` | Cada dashboard é um HTML autocontido, em pasta própria. |
-| `.agents/command/analise.md` | O **comando**: o que `/analise` dispara. |
+Cada novo estudo deve ter sua própria pasta, pergunta de negócio, validação de leitura, explicações em linguagem de negócio e registro das limitações dos dados.
 
-### Skills de fluxo (usadas na análise, nesta ordem)
+## Como o projeto evolui
 
-| Skill | Papel |
-|---|---|
-| `analista-senior` | O **método**: conduz a análise uma pergunta por vez. |
-| `verificacao-leitura` | Confere **uma vez** se os dados foram lidos corretamente (encoding, separador, tipos). |
-| `revisao-critica` | Confere, **a cada pergunta respondida**, se o resultado se sustenta. |
-| `graficos` | Escolhe o **tipo de gráfico** certo, aplica cores, rótulos e responsividade. |
-| `especialista-excel` | Exporta análises para planilhas `.xlsx` entregáveis com fórmulas vivas. |
-| `dashboard` | Cria dashboards interativos em HTML com htmx, CSS e JavaScript (segue `.design/`). |
+Ao adicionar um dataset, crie um novo notebook em `notebooks/<tema>/`. Quando a análise apoiar uma decisão recorrente, crie também `dashboards/<tema>/` e inclua uma amostra sintética para que a experiência pública continue navegável sem dados reais.
 
-### Skills complementares
+## Publicação no GitHub
 
-| Skill | Papel |
-|---|---|
-| `especialista-sql` | Consultas, modelagem e otimização SQL (SQLite, PostgreSQL, MySQL, SQL Server). |
-| `mapas` | Visualizações geoespaciais (coroplético, marcadores, rotas, 3D) com bibliotecas gratuitas. |
-| `dataviz` | Dashboards HTML renderizados por medidas DAX no Power BI. |
-| `data-creation` (DAX) | Cria, revisa e otimiza medidas, colunas e tabelas DAX. |
-| `ui-ux` | Inteligência de design de UI/UX (estilos, paletas, fontes, stacks). |
-| `ux-researcher-designer` | Pesquisa de UX: personas, jornadas, testes de usabilidade. |
-| `3d-web-experience` | Experiências 3D na web (Three.js, React Three Fiber, WebGL). |
-| `graphify` | Transforma entradas em grafo de conhecimento persistente. |
-| `skill-orchestrator` | Orquestra as skills do projeto e decide qual acionar. |
-
-## Formatos suportados
-
-CSV, Excel (`.xlsx`), Parquet, JSON, SQLite.
+O `.gitignore` exclui `.data/`, `.design/`, `.agents/`, `docs/`, `AGENTS.md`, ambientes virtuais, dependências locais e o `data.js` gerado a partir da base real. Revise `git status` antes de criar o commit e faça o commit e o push manualmente.
