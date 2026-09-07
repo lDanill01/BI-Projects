@@ -1,0 +1,8 @@
+# Ambiente e artefatos de runtime (gerados pelo bootstrap)
+.venv/
+.runtime/
+
+# Jupyter / Python
+.ipynb_checkpoints/
+__pycache__/
+*.pyc

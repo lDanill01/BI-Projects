@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light" />
+    <title>Radar Comercial | Rentabilidade</title>
+    <style>
+      :root { --blue:#118DFF; --navy:#12239E; --orange:#E66C37; --purple:#6B007B; --pink:#E044A7; --teal:#197278; --green:#1AAB40; --amber:#D9B300; --red:#D64554; --ink:#252423; --muted:#605E5C; --line:#C8C6C4; --paper:#fff; --wash:#F3F2F1; --radius:14px; --shadow:0 10px 25px rgba(37,36,35,.08); }
+      * { box-sizing:border-box; } body { margin:0; background:var(--wash); color:var(--ink); font-family:"Segoe UI",Arial,sans-serif; }
+      button,select { font:inherit; } .shell { max-width:1600px; margin:auto; padding:22px; }
+      .topbar { display:flex; align-items:center; justify-content:space-between; gap:20px; background:var(--paper); border-radius:var(--radius); padding:18px 22px; box-shadow:var(--shadow); }
+      .brand { display:flex; gap:12px; align-items:center; } .brand-mark { width:42px; height:42px; display:grid; place-items:center; background:linear-gradient(135deg,var(--blue),var(--navy)); color:white; border-radius:12px; font-size:22px; font-weight:700; }
+      h1 { margin:0; font-size:20px; } .eyebrow { color:var(--blue); font-size:11px; font-weight:700; letter-spacing:.11em; text-transform:uppercase; } .sub { color:var(--muted); font-size:13px; margin-top:3px; }
+      .data-note { color:var(--muted); font-size:12px; text-align:right; }.filters { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:10px; margin:18px 0; }
+      .filter { background:var(--paper); border-radius:10px; padding:9px 12px; border:1px solid transparent; } .filter label { display:block; color:var(--muted); font-size:11px; font-weight:700; text-transform:uppercase; margin-bottom:4px; } .filter select { width:100%; border:0; outline:0; color:var(--ink); background:transparent; }
+      .range-buttons { display:flex; gap:6px; align-items:end; }.range-buttons button { border:1px solid var(--line); background:white; color:var(--muted); border-radius:8px; padding:9px; cursor:pointer; font-size:12px; }.range-buttons button:hover,.range-buttons button.active { background:var(--blue); border-color:var(--blue); color:white; }
+      .tabs { display:flex; gap:7px; overflow:auto; padding-bottom:5px; } .tab { white-space:nowrap; border:0; background:transparent; color:var(--muted); padding:10px 14px; border-radius:8px; cursor:pointer; font-weight:600; }.tab.active { background:var(--ink); color:white; }
+      .headline { display:flex; justify-content:space-between; align-items:end; margin:22px 0 12px; gap:10px; }.headline h2 { margin:0; font-size:22px; }.headline p { margin:4px 0 0; color:var(--muted); font-size:13px; }
+      .kpis { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }.kpi { background:var(--paper); padding:18px; border-radius:var(--radius); box-shadow:var(--shadow); border-top:4px solid var(--blue); }.kpi.warn { border-color:var(--amber); }.kpi.good { border-color:var(--green); }.kpi.bad { border-color:var(--red); }.kpi .value { font-family:Impact,"Arial Narrow",sans-serif; letter-spacing:.02em; font-size:28px; margin:8px 0 4px; }.kpi .label { color:var(--muted); font-size:12px; font-weight:700; text-transform:uppercase; }.kpi .hint { color:var(--muted); font-size:12px; }
+      .grid { display:grid; grid-template-columns:repeat(12,1fr); gap:14px; margin-top:14px; }.card { background:var(--paper); border-radius:var(--radius); padding:18px; box-shadow:var(--shadow); min-height:120px; }.span-8{grid-column:span 8}.span-7{grid-column:span 7}.span-6{grid-column:span 6}.span-5{grid-column:span 5}.span-4{grid-column:span 4}.span-12{grid-column:span 12}.card h3{margin:0 0 4px;font-size:15px}.card .caption{margin:0 0 14px;color:var(--muted);font-size:12px}.chart{height:300px}.insight{background:linear-gradient(135deg,#EEF7FF,#fff);border-left:4px solid var(--blue)}.insight li{margin:8px 0;color:#42413f;font-size:13px}.insight strong{color:var(--ink)}
+      table{width:100%;border-collapse:collapse;font-size:12px}th{text-align:left;color:var(--muted);font-size:11px;text-transform:uppercase;border-bottom:1px solid var(--line);padding:8px 6px}td{padding:9px 6px;border-bottom:1px solid #eee}td.num{text-align:right;font-variant-numeric:tabular-nums}.badge{display:inline-block;padding:4px 7px;border-radius:99px;background:#EEF7FF;color:#065BAA;font-size:11px;font-weight:700}.badge.risk{background:#FFF5E5;color:#9C6500}.badge.churn{background:#FDEEEF;color:#A4262C}.badge.good{background:#ECF8EF;color:#107C10}.empty{color:var(--muted);padding:34px;text-align:center}.footer{color:var(--muted);font-size:11px;padding:22px 3px 0}.recharts-tooltip-wrapper{font-size:12px}
+      @media(max-width:980px){.filters{grid-template-columns:repeat(2,1fr)}.kpis{grid-template-columns:repeat(2,1fr)}.span-8,.span-7,.span-6,.span-5,.span-4{grid-column:span 12}.topbar{align-items:flex-start;flex-direction:column}.data-note{text-align:left}} @media(max-width:560px){.shell{padding:12px}.filters,.kpis{grid-template-columns:1fr}.topbar{padding:15px}.kpi .value{font-size:25px}.chart{height:270px}}
+    </style>
+  </head>
+  <body>
+    <main id="root"></main>
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
