@@ -16,6 +16,7 @@ O objetivo é transformar dados brutos em conhecimento útil para exploração, 
 - [Dashboard de rentabilidade comercial](dashboards/rentabilidade-comercial/index.html)
 - [Exploração operacional do Airbnb](notebooks/airbnb-exploracao/analise.ipynb)
 - [Notebook de previsão de preços](notebooks/airbnb-exploracao/price_prediction.ipynb)
+- [Dashboard operacional do Airbnb](dashboards/airbnb-exploracao/index.html)
 
 Os notebooks registram o caminho da análise, suas validações, visualizações e limitações. Os dashboards apresentam os resultados de forma navegável e orientada à interação.
 
