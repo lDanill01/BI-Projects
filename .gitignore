@@ -11,3 +11,6 @@ AGENTS.md
 docs/
 .design/
 .codex
+/outputs
+data/
+prepare_data.py

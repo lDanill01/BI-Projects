@@ -1,57 +1,62 @@
-# Análise de dados — template
+# Portfólio de Data Science
 
-Projeto para análises de dados em Python: coloque seus dados na pasta `data/` e o agente conduz a análise guiada, uma pergunta de cada vez.
+Este projeto é um portfólio pessoal dedicado à exploração, interpretação e comunicação de dados.
 
-## Como usar
+O objetivo é transformar bases de dados em análises que ajudem a compreender cenários, identificar padrões, questionar suposições e apoiar decisões. Cada investigação é apresentada por meio de notebooks analíticos e dashboards interativos, combinando profundidade técnica com uma linguagem clara para diferentes públicos.
 
-1. Coloque seus dados em **`data/`**.
-2. Abra o Codex na pasta do projeto e invoque a skill:
+## Sobre o projeto
 
-   ```
-   $analise
-   ```
+As análises partem de perguntas reais ou de problemas que podem ser investigados com dados. O trabalho busca ir além de gráficos isolados: cada resultado deve estar associado a um contexto, uma evidência observável e uma interpretação responsável.
 
-   O Codex faz o resto: localiza os dados, faz perguntas sobre o objetivo e começa a análise.
+Entre os temas explorados estão:
 
-## Estrutura do projeto
+- comportamento e desempenho comercial;
+- evolução de preços e indicadores de mercado;
+- comparação entre regiões, estados e segmentos;
+- identificação de tendências, extremos e anomalias;
+- análise temporal e sazonalidade;
+- visualização geográfica e distribuição espacial;
+- construção de indicadores para apoiar decisões.
 
-| Arquivo | Papel |
-|---|---|
-| `AGENTS.md` | Regras que valem **sempre** (célula curta, sem jargão, dashboards, gráficos, identidade visual). |
-| `.design/` | **Identidade visual** do projeto (paleta, tipografia, tokens, componentes). Tudo que estiver aqui prevalece sobre a paleta padrão e deve ser seguido pelos dashboards. Veja `.design/README.md`. |
-| `notebooks/<slug>/` | Cada análise é um notebook novo, em pasta própria. |
-| `dashboards/<slug>/` | Cada dashboard é um HTML autocontido, em pasta própria. |
-| `.codex/skills/analise/SKILL.md` | A **skill**: o que `$analise` dispara. |
+## O que você encontrará
 
-O Codex descobre automaticamente as skills do projeto em `.codex/skills/`.
-Comandos iniciados por `/` são reservados às funções internas do Codex; para
-usar uma skill do projeto, escreva `$nome-da-skill`.
+### Notebooks analíticos
 
-### Skills de fluxo (usadas na análise, nesta ordem)
+Investigações estruturadas passo a passo, com apresentação dos dados, avaliação de qualidade, exploração, comparações, interpretações e síntese final.
 
-| Skill | Papel |
-|---|---|
-| `analista-senior` | O **método**: conduz a análise uma pergunta por vez. |
-| `verificacao-leitura` | Confere **uma vez** se os dados foram lidos corretamente (encoding, separador, tipos). |
-| `revisao-critica` | Confere, **a cada pergunta respondida**, se o resultado se sustenta. |
-| `graficos` | Escolhe o **tipo de gráfico** certo, aplica cores, rótulos e responsividade. |
-| `especialista-excel` | Exporta análises para planilhas `.xlsx` entregáveis com fórmulas vivas. |
-| `dashboard` | Cria dashboards interativos em HTML com htmx, CSS e JavaScript (segue `.design/`). |
+### Dashboards interativos
 
-### Skills complementares
+Painéis voltados à exploração autônoma dos resultados, com filtros, indicadores, gráficos, mapas, tabelas e detalhamentos que permitem ao leitor formular suas próprias perguntas.
 
-| Skill | Papel |
-|---|---|
-| `especialista-sql` | Consultas, modelagem e otimização SQL (SQLite, PostgreSQL, MySQL, SQL Server). |
-| `mapas` | Visualizações geoespaciais (coroplético, marcadores, rotas, 3D) com bibliotecas gratuitas. |
-| `dataviz` | Dashboards HTML renderizados por medidas DAX no Power BI. |
-| `data-creation` (DAX) | Cria, revisa e otimiza medidas, colunas e tabelas DAX. |
-| `ui-ux` | Inteligência de design de UI/UX (estilos, paletas, fontes, stacks). |
-| `ux-researcher-designer` | Pesquisa de UX: personas, jornadas, testes de usabilidade. |
-| `3d-web-experience` | Experiências 3D na web (Three.js, React Three Fiber, WebGL). |
-| `graphify` | Transforma entradas em grafo de conhecimento persistente. |
-| `skill-orchestrator` | Orquestra as skills do projeto e decide qual acionar. |
+### Visualizações orientadas à decisão
 
-## Formatos suportados
+Os gráficos e tabelas são escolhidos para tornar relações importantes mais fáceis de perceber. A prioridade é comunicar o que mudou, onde está a diferença, qual é a dimensão do fenômeno e que investigação pode ser feita em seguida.
 
-CSV, Excel (`.xlsx`), Parquet, JSON, SQLite.
+## Análise em destaque
+
+### Preços de combustíveis no Brasil
+
+Investigação sobre preços de revenda entre 2004 e 2021, considerando produtos, regiões, estados, evolução temporal, extremos, anomalias e diferenças de cobertura.
+
+A análise também foi expandida com uma visão espacial por Unidade da Federação e um mapa interativo para comparar produtos e períodos. A base permite uma leitura estadual; não há dados suficientes para representar cidades ou postos individuais.
+
+## Princípios do portfólio
+
+- Começar pelo problema e pela pergunta de negócio.
+- Conhecer a estrutura, a cobertura e as limitações dos dados antes de tirar conclusões.
+- Mostrar os denominadores e o tamanho da base sempre que eles forem relevantes.
+- Diferenciar associação de causalidade.
+- Explicitar decisões de tratamento e critérios de comparação.
+- Evitar conclusões que os dados não conseguem sustentar.
+- Priorizar visualizações claras, acessíveis e úteis para investigação.
+- Valorizar reprodutibilidade, rastreabilidade e comunicação.
+
+## Como ler os resultados
+
+Os notebooks mostram o caminho da análise e as evidências que sustentam cada achado. Os dashboards oferecem uma experiência mais exploratória, permitindo alterar filtros e observar como os resultados se comportam em diferentes recortes.
+
+As conclusões devem ser lidas em conjunto com suas limitações. Uma diferença observada nos dados pode ser um sinal importante para investigação, mas nem sempre representa uma causa ou uma oportunidade imediata.
+
+## Intenção
+
+Este portfólio registra uma forma de trabalhar com dados: curiosidade para investigar, rigor para validar e clareza para comunicar.
