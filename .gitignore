@@ -14,3 +14,4 @@ docs/
 /outputs
 data/
 prepare_data.py
+test_dashboard.py

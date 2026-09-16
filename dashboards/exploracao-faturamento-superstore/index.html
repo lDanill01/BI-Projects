@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Faturamento Executivo | Superstore</title>
+  <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <style>
+    :root{--bg:#0b0f1a;--bg-glow:#1a2240;--card:#151b2e;--card2:#1a2138;--border:#232c45;--border2:#2e3a5c;--text:#e8ecf6;--muted:#8b94ad;--muted2:#5c6680;--blue:#6c8cff;--green:#2dd4a7;--amber:#ffb454;--pink:#ff6b9d;--purple:#a78bfa;--shadow:0 8px 24px rgba(0,0,0,.35)}
+    *{box-sizing:border-box} body{margin:0;background:radial-gradient(1200px 600px at 80% -10%,var(--bg-glow) 0,var(--bg) 55%) fixed;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}.wrap{max-width:1280px;margin:auto;padding:24px}
+    header{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:20px}.brand{display:flex;align-items:center;gap:14px}.logo{display:grid;place-items:center;width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,var(--blue),var(--purple));font-size:22px;box-shadow:var(--shadow)}h1{margin:0;font-size:22px}.subtitle,.updated,.note{color:var(--muted);font-size:13px;margin-top:3px}.updated{text-align:right;font-size:12px;color:var(--muted2)}.updated b{color:var(--muted)}
+    .filters{display:flex;align-items:end;gap:12px;flex-wrap:wrap;padding:14px 16px;margin-bottom:20px;border:1px solid var(--border);border-radius:14px;background:var(--card);box-shadow:var(--shadow)}.field{display:grid;gap:5px}.field label{color:var(--muted2);font-size:11px;letter-spacing:.8px;text-transform:uppercase}.field select,.btn{min-height:36px;padding:0 12px;border:1px solid var(--border2);border-radius:9px;background:var(--card2);color:var(--text);font:inherit;font-size:13px}.field select:focus,.btn:focus{outline:3px solid rgba(108,140,255,.45);outline-offset:2px}.btn{font-weight:700;cursor:pointer}.btn:hover{border-color:var(--blue)}.btn.export{margin-left:auto;color:var(--green)}.btn.reset{color:var(--muted)}
+    .status{min-height:1.2em;margin:-12px 0 14px;color:var(--muted2);font-size:12px}.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:20px}.kpi,.card,.insight,.caveat{border:1px solid var(--border);border-radius:14px;background:var(--card);box-shadow:var(--shadow)}.kpi{padding:16px 18px}.kpi-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.kpi-label{color:var(--muted);font-size:12px;letter-spacing:.8px;text-transform:uppercase}.kpi-icon{display:grid;place-items:center;width:32px;height:32px;border-radius:9px}.kpi-value{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums}.kpi-bottom{margin-top:6px;color:var(--muted);font-size:12px}.delta.up{color:var(--green)}.delta.down{color:var(--pink)}.delta.neutral{color:var(--muted)}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px;margin-bottom:20px}.span8{grid-column:span 8}.span6{grid-column:span 6}.span4{grid-column:span 4}.span12{grid-column:span 12}.card{padding:18px;min-width:0}.card h2{margin:0;font-size:15px}.card .sub{margin:3px 0 12px;color:var(--muted2);font-size:12px}.chart-box{height:290px;position:relative}.chart-box canvas{width:100%!important;height:100%!important}.table-wrap{overflow:auto;max-height:360px}table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:10px 12px;border-bottom:1px solid var(--border);white-space:nowrap;text-align:right}th{position:sticky;top:0;background:var(--card2);color:var(--muted);font-size:11px;letter-spacing:.6px;text-transform:uppercase}th:first-child,td:first-child{text-align:left}tbody tr:hover{background:var(--card2)}
+    .insights{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.insight{padding:16px 18px;background:linear-gradient(160deg,var(--card2),var(--card))}.tag{display:inline-block;margin-bottom:9px;padding:4px 9px;border-radius:999px;font-size:10px;font-weight:800;letter-spacing:.8px;text-transform:uppercase}.insight p,.caveat p{margin:0;color:var(--muted);font-size:13px;line-height:1.55}.insight b,.caveat b{color:var(--text)}.caveat{padding:16px 18px;margin-top:16px}.caveat h2{margin:0 0 5px;font-size:14px}footer{padding:24px 0 8px;color:var(--muted2);text-align:center;font-size:12px}
+    @media(max-width:1000px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.span8,.span6,.span4{grid-column:span 12}.insights{grid-template-columns:1fr}}@media(max-width:620px){.wrap{padding:16px}.kpis{grid-template-columns:1fr}.btn.export{margin-left:0}.updated{text-align:left}.field{width:100%}.field select{width:100%}}
+  </style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <div class="brand"><div class="logo">▦</div><div><h1>Faturamento executivo</h1><p class="subtitle" id="periodo">Visão consolidada de vendas</p></div></div>
+    <div class="updated">Fonte: <b>train.csv</b><br>Valores na unidade monetária da fonte</div>
+  </header>
+
+  <section class="filters" aria-label="Filtros do dashboard">
+    <div class="field"><label for="filtroAno">Ano</label><select id="filtroAno"></select></div>
+    <div class="field"><label for="filtroRegiao">Região</label><select id="filtroRegiao"></select></div>
+    <div class="field"><label for="filtroCategoria">Categoria</label><select id="filtroCategoria"></select></div>
+    <div class="field"><label for="filtroSegmento">Segmento</label><select id="filtroSegmento"></select></div>
+    <button class="btn reset" id="limpar">Limpar filtros</button><button class="btn export" id="exportar">⇩ Exportar CSV</button>
+  </section>
+  <div class="status" id="status" hx-trigger="dashboard-updated from:body" hx-on:dashboard-updated="this.textContent='Recorte atualizado'" aria-live="polite"></div>
+
+  <section class="kpis" aria-label="Indicadores principais">
+    <article class="kpi"><div class="kpi-top"><span class="kpi-label">Faturamento líquido</span><span class="kpi-icon" style="background:rgba(108,140,255,.15)">◈</span></div><div class="kpi-value" id="kpiFaturamento">—</div><div class="kpi-bottom" id="deltaFaturamento">Período filtrado</div></article>
+    <article class="kpi"><div class="kpi-top"><span class="kpi-label">Pedidos únicos</span><span class="kpi-icon" style="background:rgba(45,212,167,.15)">□</span></div><div class="kpi-value" id="kpiPedidos">—</div><div class="kpi-bottom" id="deltaPedidos">Período filtrado</div></article>
+    <article class="kpi"><div class="kpi-top"><span class="kpi-label">Ticket por pedido</span><span class="kpi-icon" style="background:rgba(255,180,84,.15)">◇</span></div><div class="kpi-value" id="kpiTicket">—</div><div class="kpi-bottom" id="deltaTicket">Faturamento ÷ pedidos</div></article>
+    <article class="kpi"><div class="kpi-top"><span class="kpi-label">Itens de pedido</span><span class="kpi-icon" style="background:rgba(255,107,157,.15)">▤</span></div><div class="kpi-value" id="kpiItens">—</div><div class="kpi-bottom">Cada linha da fonte representa um item</div></article>
+  </section>
+
+  <section class="grid">
+    <article class="card span8"><h2 id="tituloTempo">Evolução anual do faturamento líquido</h2><p class="sub">Valores agregados pelo recorte atual</p><div class="chart-box"><canvas id="graficoTempo"></canvas></div></article>
+    <article class="card span4"><h2>Faturamento por categoria</h2><p class="sub">A barra destaca a categoria filtrada</p><div class="chart-box"><canvas id="graficoCategoria"></canvas></div></article>
+    <article class="card span6"><h2>Comparação regional</h2><p class="sub">Faturamento no período filtrado</p><div class="chart-box"><canvas id="graficoRegiao"></canvas></div></article>
+    <article class="card span6"><h2>Subcategorias prioritárias</h2><p class="sub">As sete maiores em faturamento no recorte</p><div class="chart-box"><canvas id="graficoSubcategoria"></canvas></div></article>
+    <article class="card span12"><h2>Detalhamento por subcategoria</h2><p class="sub">Faturamento, pedidos e ticket por pedido</p><div class="table-wrap"><table><thead><tr><th>Subcategoria</th><th>Faturamento líquido</th><th>Pedidos</th><th>Ticket por pedido</th><th>Participação</th></tr></thead><tbody id="tabelaSubcategorias"></tbody></table></div></article>
+  </section>
+
+  <section class="insights" id="insights" aria-label="Insights executivos"></section>
+  <aside class="caveat"><h2>Como interpretar este painel</h2><p><b>Faturamento não equivale a rentabilidade.</b> A fonte não traz custo, margem, desconto, quantidade, estoque, devolução ou metas. Use o ranking para priorizar investigação comercial, não para decidir expansão ou corte sem integrar essas informações.</p></aside>
+  <footer>Dashboard executivo · Dados locais e filtros aplicados a gráficos, tabela e exportação</footer>
+</main>
+
+<script src="data.js"></script>
+<script>
+const records=window.SUPERSTORE_DATA.records.map(r=>({...r,ano:r.data.slice(0,4),mes:r.data.slice(0,7)}));
+const state={ano:'2018',regiao:'Todas',categoria:'Todas',segmento:'Todos'}; const charts={};
+const color={Technology:'#6c8cff',Furniture:'#ffb454','Office Supplies':'#2dd4a7',West:'#6c8cff',East:'#2dd4a7',Central:'#ffb454',South:'#ff6b9d'};
+const money=v=>Number(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); const number=v=>Number(v||0).toLocaleString('pt-BR'); const percent=v=>(v*100).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%';
+const sum=(rows,key='venda')=>rows.reduce((total,row)=>total+Number(row[key]||0),0); const unique=(rows,key)=>new Set(rows.map(row=>row[key])).size;
+function values(key){return [...new Set(records.map(row=>row[key]))].sort((a,b)=>String(a).localeCompare(String(b)))}
+function fill(id,first,key){const el=document.getElementById(id);el.innerHTML=`<option>${first}</option>`+values(key).map(v=>`<option>${v}</option>`).join('')}
+fill('filtroAno','Todos','ano');fill('filtroRegiao','Todas','regiao');fill('filtroCategoria','Todas','categoria');fill('filtroSegmento','Todos','segmento');
+function filtered(ignore=''){return records.filter(r=>(ignore==='ano'||state.ano==='Todos'||r.ano===state.ano)&&(ignore==='regiao'||state.regiao==='Todas'||r.regiao===state.regiao)&&(ignore==='categoria'||state.categoria==='Todas'||r.categoria===state.categoria)&&(ignore==='segmento'||state.segmento==='Todos'||r.segmento===state.segmento))}
+function grouped(rows,key){const map=new Map();rows.forEach(r=>map.set(r[key],(map.get(r[key])||0)+Number(r.venda)));return [...map].map(([nome,valor])=>({nome,valor})).sort((a,b)=>b.valor-a.valor)}
+const labelsPlugin={id:'labels',afterDatasetsDraw(chart){const {ctx}=chart;ctx.save();ctx.fillStyle='#e8ecf6';ctx.font='600 10px -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif';ctx.textBaseline='middle';chart.getDatasetMeta(0).data.forEach((point,i)=>{const value=chart.data.datasets[0].data[i];if(value===undefined)return;ctx.textAlign=chart.options.indexAxis==='y'?'left':'center';if(chart.options.indexAxis==='y')ctx.fillText(money(value),point.x+7,point.y);else ctx.fillText(money(value),point.x,point.y-10)});ctx.restore()}};
+function renderChart(id,type,labels,data,colors,options={}){if(charts[id])charts[id].destroy();charts[id]=new Chart(document.getElementById(id),{type,data:{labels,datasets:[{data,backgroundColor:colors,borderColor:colors,borderWidth:type==='line'?3:1,borderRadius:type==='bar'?6:0,fill:type==='line',tension:.3,pointRadius:type==='line'?4:0,pointBackgroundColor:'#ffb454'}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:options.indexAxis,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+money(c.parsed[options.indexAxis==='y'?'x':'y'])}}},scales:{x:{grid:{display:false},ticks:{color:'#8b94ad',maxRotation:0,autoSkip:true,maxTicksLimit:12}},y:{beginAtZero:true,grid:{color:'rgba(139,148,173,.10)'},ticks:{color:'#8b94ad'}}}},plugins:[labelsPlugin]})}
+function updateKpi(id,value){document.getElementById(id).textContent=value}
+function comparison(rows){if(state.ano==='Todos')return null;const previous=String(Number(state.ano)-1);const prior=records.filter(r=>r.ano===previous&&(state.regiao==='Todas'||r.regiao===state.regiao)&&(state.categoria==='Todas'||r.categoria===state.categoria)&&(state.segmento==='Todos'||r.segmento===state.segmento));return {faturamento:sum(prior),pedidos:unique(prior,'pedido')}}
+function delta(id,current,prior){const el=document.getElementById(id);if(!prior){el.textContent='Sem base comparável';el.className='kpi-bottom delta neutral';return}const rate=(current-prior)/prior;el.textContent=(rate>=0?'▲ ':'▼ ')+percent(Math.abs(rate))+' vs ano anterior';el.className='kpi-bottom delta '+(rate>=0?'up':'down')}
+function render(){const rows=filtered();const faturamento=sum(rows),pedidos=unique(rows,'pedido'),ticket=pedidos?faturamento/pedidos:0,base=comparison(rows);updateKpi('kpiFaturamento',money(faturamento));updateKpi('kpiPedidos',number(pedidos));updateKpi('kpiTicket',money(ticket));updateKpi('kpiItens',number(rows.length));delta('deltaFaturamento',faturamento,base?.faturamento);delta('deltaPedidos',pedidos,base?.pedidos);delta('deltaTicket',ticket,base?.pedidos?base.faturamento/base.pedidos:0);
+  const timeRows=filtered('ano');const timeKey=state.ano==='Todos'?'ano':'mes';const serie=grouped(timeRows,timeKey).sort((a,b)=>a.nome.localeCompare(b.nome));document.getElementById('tituloTempo').textContent=state.ano==='Todos'?'Evolução anual do faturamento líquido':'Evolução mensal do faturamento líquido';renderChart('graficoTempo','line',serie.map(x=>x.nome),serie.map(x=>x.valor),'#6c8cff');
+  const categorias=grouped(filtered('categoria'),'categoria');renderChart('graficoCategoria','bar',categorias.map(x=>x.nome),categorias.map(x=>x.valor),categorias.map(x=>state.categoria!=='Todas'&&x.nome!==state.categoria?'rgba(108,140,255,.22)':color[x.nome]||'#6c8cff'));
+  const regioes=grouped(filtered('regiao'),'regiao');renderChart('graficoRegiao','bar',regioes.map(x=>x.nome),regioes.map(x=>x.valor),regioes.map(x=>color[x.nome]||'#a78bfa'),{indexAxis:'y'});
+  const subs=grouped(rows,'subcategoria');const top=subs.slice(0,7).reverse();renderChart('graficoSubcategoria','bar',top.map(x=>x.nome),top.map(x=>x.valor),'#a78bfa',{indexAxis:'y'});
+  document.getElementById('tabelaSubcategorias').innerHTML=subs.map(x=>{const group=rows.filter(r=>r.subcategoria===x.nome);const count=unique(group,'pedido');return `<tr><td>${x.nome}</td><td>${money(x.valor)}</td><td>${number(count)}</td><td>${money(x.valor/count)}</td><td>${percent(x.valor/faturamento)}</td></tr>`}).join('')||'<tr><td colspan="5">Nenhum registro para o recorte.</td></tr>';
+  const liderCategoria=categorias[0],liderRegiao=regioes[0],liderSub=subs[0];document.getElementById('insights').innerHTML=`<article class="insight"><span class="tag" style="color:var(--blue);background:rgba(108,140,255,.14)">Categoria líder</span><p><b>${liderCategoria?.nome||'—'}</b> concentra <b>${liderCategoria?percent(liderCategoria.valor/faturamento):'0%'}</b> do faturamento do recorte.</p></article><article class="insight"><span class="tag" style="color:var(--green);background:rgba(45,212,167,.14)">Região líder</span><p><b>${liderRegiao?.nome||'—'}</b> lidera a receita filtrada com <b>${liderRegiao?money(liderRegiao.valor):'0'}</b>.</p></article><article class="insight"><span class="tag" style="color:var(--amber);background:rgba(255,180,84,.14)">Prioridade de investigação</span><p><b>${liderSub?.nome||'—'}</b> é a principal subcategoria por faturamento. Valide margem, desconto e estoque antes de definir uma ação.</p></article>`;
+  const description=[state.ano,state.regiao,state.categoria,state.segmento].filter(v=>!['Todos','Todas'].includes(v)).join(' · ');document.getElementById('periodo').textContent=description||'Visão consolidada de vendas';document.body.dispatchEvent(new Event('dashboard-updated'));
+}
+[['filtroAno','ano'],['filtroRegiao','regiao'],['filtroCategoria','categoria'],['filtroSegmento','segmento']].forEach(([id,key])=>document.getElementById(id).addEventListener('change',e=>{state[key]=e.target.value;render()}));document.getElementById('limpar').addEventListener('click',()=>{Object.assign(state,{ano:'2018',regiao:'Todas',categoria:'Todas',segmento:'Todos'});document.getElementById('filtroAno').value='2018';document.getElementById('filtroRegiao').selectedIndex=0;document.getElementById('filtroCategoria').selectedIndex=0;document.getElementById('filtroSegmento').selectedIndex=0;render()});
+document.getElementById('exportar').addEventListener('click',()=>{const header='data;pedido;regiao;categoria;segmento;subcategoria;faturamento_liquido\n';const body=filtered().map(r=>[r.data,r.pedido,r.regiao,r.categoria,r.segmento,r.subcategoria,r.venda.toFixed(2)].map(v=>'"'+String(v).replaceAll('"','""')+'"').join(';')).join('\n');const url=URL.createObjectURL(new Blob(['\ufeff'+header+body],{type:'text/csv;charset=utf-8'}));const link=document.createElement('a');link.href=url;link.download='faturamento_filtrado.csv';link.click();URL.revokeObjectURL(url)});render();
+</script>
+</body>
+</html>
