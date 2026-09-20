@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="O que leva um livro ao topo do Top-100: preço, avaliação, gênero, ano e autor.">
+  <title>O que leva ao topo? | Top-100 Trending Books</title>
+  <script src="htmx.min.js" defer></script>
+  <script src="data.js"></script>
+  <style>
+    :root {
+      --prim: #0072B2; --destaque: #E69F00; --verde: #009E73;
+      --neutro: #94A3B8; --eixo: #B0B7C3; --texto: #334155;
+      --fundo: #F8FAFC; --card: #FFFFFF; --borda: #E5E7EB;
+      --raio: 10px; --sombra: 0 1px 4px rgba(51,65,85,.12);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--fundo); color: var(--texto); padding: 1.5rem; }
+    .wrap { max-width: 1200px; margin: 0 auto; }
+    header { margin-bottom: 1.25rem; }
+    header h1 { font-size: clamp(1.4rem, 3vw, 2rem); color: var(--texto); }
+    header p { color: var(--neutro); margin-top: .25rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+    .card { background: var(--card); border: 1px solid var(--borda); border-radius: var(--raio); box-shadow: var(--sombra); padding: 1rem 1.25rem; }
+    .card .rotulo { font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; color: var(--neutro); }
+    .card .valor { font-size: 1.9rem; font-weight: 700; color: var(--prim); }
+    .card .detalhe { font-size: .85rem; color: var(--neutro); }
+    .filtros { display: flex; flex-wrap: wrap; gap: .75rem; margin: 1.25rem 0; align-items: end; }
+    .filtros label { display: grid; gap: .25rem; font-size: .8rem; color: var(--neutro); }
+    .filtros select, .filtros input { font: inherit; color: var(--texto); padding: .45rem .6rem; border: 1px solid var(--borda); border-radius: 8px; background: #fff; }
+    section h2 { font-size: 1.05rem; margin: 1.5rem 0 .75rem; }
+    .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem; }
+    .barra-linha { display: grid; grid-template-columns: 150px 1fr 60px; gap: .5rem; align-items: center; margin: .45rem 0; font-size: .85rem; }
+    .trilho { background: var(--borda); border-radius: 6px; height: 18px; overflow: hidden; }
+    .preench { background: var(--prim); height: 100%; border-radius: 6px; }
+    .preench.destaque { background: var(--destaque); }
+    table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+    th { background: var(--prim); color: #fff; text-align: left; padding: 8px 10px; }
+    td { padding: 7px 10px; border-bottom: 1px solid var(--borda); }
+    tbody tr:nth-child(even) { background: var(--fundo); }
+    td.num, th.num { text-align: right; }
+    .nota { font-size: .8rem; color: var(--neutro); margin-top: .75rem; }
+    svg { width: 100%; height: auto; }
+    @media (max-width: 640px) { .barra-linha { grid-template-columns: 110px 1fr 50px; } }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>O que leva um livro ao topo do Top-100?</h1>
+    <p>Preço (US$), avaliação (0–5), gênero simplificado, era e autor · Rank 1 = mais trending</p>
+  </header>
+
+  <div class="grid" id="kpis">
+    <div class="card"><div class="rotulo">Livros no recorte</div><div class="valor" id="k-n">–</div><div class="detalhe" id="k-n-sub">–</div></div>
+    <div class="card"><div class="rotulo">Preço mediano (US$)</div><div class="valor" id="k-preco">–</div><div class="detalhe">mediana do recorte</div></div>
+    <div class="card"><div class="rotulo">Nota média</div><div class="valor" id="k-nota">–</div><div class="detalhe">97 de 100 têm avaliação</div></div>
+    <div class="card"><div class="rotulo">Recentes 2023–2024</div><div class="valor" id="k-rec">–</div><div class="detalhe">% do recorte</div></div>
+  </div>
+
+  <div class="filtros">
+    <label>Gênero
+      <select id="f-genero"><option value="">Todos</option></select>
+    </label>
+    <label>Era
+      <select id="f-era"><option value="">Todas</option><option>até 2017</option><option>2018-2022</option><option>2023-2024</option></select>
+    </label>
+    <label>Rank até
+      <input type="range" id="f-top" min="10" max="100" step="5" value="100">
+    </label>
+    <span class="detalhe" id="f-top-lab" style="font-size:.85rem;color:var(--neutro)">Top-100</span>
+    <label>Nota mínima
+      <select id="f-nota"><option value="">Todas</option><option value="4.5">4.5+</option><option value="4.7">4.7+</option><option value="4.8">4.8+</option></select>
+    </label>
+  </div>
+
+  <section>
+    <h2>Infantil e fantasy têm mediana mais perto do topo (Rank mediano, n ≥ 5)</h2>
+    <div class="card" id="graf-genero"></div>
+    <p class="nota">Base total (100 livros). Grupos com n &lt; 5 omitidos por fragilidade.</p>
+  </section>
+
+  <div class="cols">
+    <section>
+      <h2>Lançamentos 2023–2024 concentram o topo (Rank mediano por era)</h2>
+      <div class="card" id="graf-era"></div>
+    </section>
+    <section>
+      <h2>Preço não separa o topo de forma clara (US$ × posição, recorte)</h2>
+      <div class="card"><svg id="scatter" viewBox="0 0 460 300" role="img" aria-label="Dispersão preço versus rank"></svg></div>
+    </section>
+  </div>
+
+  <section>
+    <h2>Livros do recorte, ordenados por Rank</h2>
+    <div class="card" style="padding:0;overflow:auto">
+      <table>
+        <thead><tr><th class="num">Rank</th><th>Título</th><th>Autor</th><th>Gênero</th><th>Era</th><th class="num">Preço (US$)</th><th class="num">Nota</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <p class="nota">Associação, não causa: sem vendas e exposição não há como afirmar o que causa o topo. Recortes pequenos são frágeis.</p>
+  </section>
+</div>
+
+<script>
+const livros = DADOS.livros;
+const $ = id => document.getElementById(id);
+const genSel = $("f-genero"), eraSel = $("f-era"), topRg = $("f-top"), notaSel = $("f-nota");
+
+[...new Set(livros.map(l => l.genero))].sort().forEach(g => {
+  const o = document.createElement("option"); o.textContent = g; genSel.appendChild(o);
+});
+
+function mediana(xs) {
+  if (!xs.length) return NaN;
+  const s = [...xs].sort((a, b) => a - b), m = Math.floor(s.length / 2);
+  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+}
+function filtrados() {
+  const topN = +topRg.value, nMin = notaSel.value === "" ? -1 : +notaSel.value;
+  return livros.filter(l =>
+    (!genSel.value || l.genero === genSel.value) &&
+    (!eraSel.value || l.era === eraSel.value) &&
+    l.rank <= topN &&
+    (l.rating === null || l.rating >= nMin)
+  ).sort((a, b) => a.rank - b.rank);
+}
+function barras(el, itens, rotulo, maxV, fmt) {
+  el.innerHTML = itens.map((it, i) =>
+    `<div class="barra-linha"><span>${it.rotulo}</span>` +
+    `<div class="trilho"><div class="preench${i === 0 ? " destaque" : ""}" style="width:${Math.round(100 * it.valor / maxV)}%"></div></div>` +
+    `<span><b>${fmt(it.valor)}</b> <span style="color:var(--neutro)">(${it.n})</span></span></div>`
+  ).join("");
+}
+function desenhaEstatico() {
+  const g = DADOS.por_genero.map(d => ({ rotulo: d.genero_simples, valor: d.rank_med, n: "n=" + d.n }));
+  barras($("graf-genero"), g, 0, Math.max(...g.map(x => x.valor)), v => v.toFixed(0));
+  const e = DADOS.por_era.map(d => ({ rotulo: d.era, valor: d.rank_med, n: "n=" + d.n }));
+  barras($("graf-era"), e, 0, Math.max(...e.map(x => x.valor)), v => v.toFixed(0));
+}
+function desenha() {
+  const rec = filtrados();
+  $("f-top-lab").textContent = "Rank ≤ " + topRg.value;
+  $("k-n").textContent = rec.length;
+  $("k-n-sub").textContent = "de 100 livros";
+  $("k-preco").textContent = rec.length ? "US$ " + mediana(rec.map(l => l.preco)).toFixed(2) : "–";
+  const notas = rec.map(l => l.rating).filter(v => v !== null);
+  $("k-nota").textContent = notas.length ? (notas.reduce((a, b) => a + b, 0) / notas.length).toFixed(2) : "–";
+  $("k-rec").textContent = rec.length ? Math.round(100 * rec.filter(l => l.era === "2023-2024").length / rec.length) + "%" : "–";
+  const W = 460, H = 300, ML = 38, MB = 30, MT = 8, MR = 8;
+  const pMax = 50;
+  const X = p => ML + (p / pMax) * (W - ML - MR);
+  const Y = r => MT + ((r - 1) / 99) * (H - MT - MB);
+  const cor = e => e === "2023-2024" ? "#E69F00" : e === "2018-2022" ? "#0072B2" : "#94A3B8";
+  let s = `<text x="4" y="20" font-size="10" fill="#B0B7C3">1 (topo)</text>` +
+    `<text x="4" y="${H - MB}" font-size="10" fill="#B0B7C3">100</text>` +
+    `<text x="${W - 44}" y="${H - 8}" font-size="10" fill="#B0B7C3">US$ 50</text>`;
+  rec.forEach(l => {
+    s += `<circle cx="${X(Math.min(l.preco, pMax)).toFixed(1)}" cy="${Y(l.rank).toFixed(1)}" r="5" fill="${cor(l.era)}" opacity="0.75"><title>#${l.rank} ${l.titulo} — US$ ${l.preco}</title></circle>`;
+  });
+  $("scatter").innerHTML = s;
+  $("tbody").innerHTML = rec.map(l =>
+    `<tr><td class="num"><b>${l.rank}</b></td><td>${l.titulo}</td><td>${l.autor}</td>` +
+    `<td>${l.genero}</td><td>${l.era}</td><td class="num">US$ ${l.preco.toFixed(2)}</td>` +
+    `<td class="num">${l.rating === null ? "–" : l.rating.toFixed(1)}</td></tr>`
+  ).join("") || `<tr><td colspan="7">Nenhum livro neste recorte.</td></tr>`;
+}
+[genSel, eraSel, notaSel].forEach(el => el.addEventListener("change", desenha));
+topRg.addEventListener("input", desenha);
+desenhaEstatico();
+desenha();
+</script>
+</body>
+</html>
