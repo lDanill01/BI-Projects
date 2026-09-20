@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Painel executivo dos 100 livros em tendência.">
+  <title>Tendências de livros | Painel executivo</title>
+  <script src="htmx.min.js" defer></script>
+  <script src="data.js"></script>
+  <style>
+    :root {
+      --paper: #F5F1E8;
+      --wash: #EBE4D1;
+      --ink: #201C16;
+      --ink-soft: #6E6656;
+      --ink-faint: #A69C87;
+      --rule: #D8CFBA;
+      --accent: #D9481C;
+      --green: #2E6B4F;
+      --red: #B03A2E;
+      --serif: Georgia, "Times New Roman", serif;
+      --mono: "SFMono-Regular", Menlo, Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; }
+    html { background: var(--paper); }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font: 400 14px/1.5 var(--mono);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, input:focus-visible, select:focus-visible {
+      outline: 3px solid color-mix(in srgb, var(--accent) 55%, transparent);
+      outline-offset: 2px;
+    }
+
+    .sheet { max-width: 1320px; margin: 0 auto; padding: 0 32px 48px; }
+    .masthead {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 30px 0 20px;
+      border-bottom: 4px double var(--ink);
+    }
+    .brand { display: flex; gap: 14px; align-items: center; }
+    .brand-mark {
+      width: 54px; height: 54px; display: grid; place-items: center;
+      background: var(--ink); color: var(--paper); font-size: 12px; font-weight: 700;
+      letter-spacing: .08em;
+    }
+    h1 { margin: 0; font: 700 clamp(30px, 4vw, 48px)/.95 var(--serif); letter-spacing: -.035em; }
+    .subtitle, .edition { margin: 7px 0 0; color: var(--ink-soft); font-size: 11px; letter-spacing: .08em; }
+    .edition { text-align: right; line-height: 1.7; }
+    .edition strong { color: var(--ink); }
+
+    .filters {
+      display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+      gap: 16px; align-items: end; padding: 18px 0;
+      border-bottom: 1px solid var(--ink);
+    }
+    .filter-field { display: grid; gap: 6px; }
+    .filter-field label, .filter-heading {
+      color: var(--ink-soft); font-size: 10px; font-weight: 700; letter-spacing: .1em;
+    }
+    .filter-field select, .filter-field input {
+      width: 100%; min-height: 37px; border: 1px solid var(--ink); border-radius: 0;
+      background: transparent; color: var(--ink); padding: 7px 9px;
+    }
+    .price-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+    .price-pair input { min-width: 0; }
+    .reset {
+      min-height: 37px; border: 1px solid var(--ink); background: var(--ink);
+      color: var(--paper); padding: 8px 13px; font-weight: 700;
+    }
+    .reset:hover { background: var(--accent); border-color: var(--accent); }
+
+    .status-line {
+      display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+      padding: 13px 0; color: var(--ink-soft); font-size: 11px; border-bottom: 1px solid var(--rule);
+    }
+    .status-line strong { color: var(--ink); }
+    .status-line [aria-live] { color: var(--accent); font-weight: 700; }
+
+    .kpis { display: grid; grid-template-columns: repeat(4, 1fr); border-bottom: 1px solid var(--ink); }
+    .kpi { padding: 18px 16px 19px; min-width: 0; }
+    .kpi + .kpi { border-left: 1px solid var(--rule); }
+    .kpi-label { color: var(--ink-soft); font-size: 10px; font-weight: 700; letter-spacing: .08em; }
+    .kpi-value { margin-top: 7px; font: 700 clamp(27px, 3vw, 42px)/1 var(--serif); letter-spacing: -.025em; }
+    .kpi-detail { min-height: 18px; margin-top: 7px; color: var(--ink-soft); font-size: 10px; }
+
+    .analysis-grid { display: grid; grid-template-columns: 1.15fr .85fr; border-bottom: 1px solid var(--ink); }
+    .analysis-grid > section { padding: 26px 0; }
+    .analysis-grid > section:first-child { padding-right: 28px; border-right: 1px solid var(--rule); }
+    .analysis-grid > section:last-child { padding-left: 28px; }
+    .section-heading { display: flex; justify-content: space-between; gap: 16px; align-items: baseline; margin-bottom: 15px; }
+    .section-heading h2 { margin: 0; font: 700 23px/1 var(--serif); letter-spacing: -.015em; }
+    .section-heading p { margin: 0; color: var(--ink-soft); font-size: 10px; }
+    .pending { min-height: 170px; display: grid; place-items: center; border: 1px dashed var(--rule); color: var(--ink-soft); text-align: center; padding: 20px; }
+    .chart-stack { display: grid; gap: 24px; }
+    .chart-figure { margin: 0; }
+    .chart-caption { margin: 0 0 9px; color: var(--ink); font: 700 16px/1.12 var(--serif); }
+    .chart-note { margin: 3px 0 0; color: var(--ink-soft); font-size: 10px; }
+    .chart-svg { display: block; width: 100%; height: auto; overflow: visible; }
+    .chart-svg text { font-family: var(--mono); fill: var(--ink-soft); font-size: 10px; }
+    .chart-svg .value-label { fill: var(--ink); font-weight: 700; }
+    .chart-svg .axis { stroke: var(--rule); stroke-width: 1; }
+    .chart-svg .bar { fill: var(--ink); }
+    .chart-svg .bar-highlight { fill: var(--accent); }
+    .chart-svg .point { fill: var(--accent); stroke: var(--paper); stroke-width: 1.5; }
+    .chart-svg .point:hover { fill: var(--ink); }
+    .scatter-key { display: flex; justify-content: space-between; gap: 12px; margin-top: 5px; color: var(--ink-soft); font-size: 10px; }
+    .insight-grid { display: grid; grid-template-columns: repeat(3, 1fr); border-bottom: 1px solid var(--ink); }
+    .insight { padding: 20px 16px 20px 0; }
+    .insight + .insight { padding-left: 16px; border-left: 1px solid var(--rule); }
+    .insight-label { color: var(--accent); font-size: 10px; font-weight: 700; letter-spacing: .08em; }
+    .insight-text { margin: 7px 0 0; font: 600 18px/1.15 var(--serif); letter-spacing: -.01em; }
+
+    .notice { margin-top: 26px; padding: 14px 0; border-top: 2px solid var(--ink); border-bottom: 1px solid var(--rule); color: var(--ink-soft); font-size: 12px; }
+    .notice strong { color: var(--ink); }
+    .table-section { padding-top: 26px; }
+    .table-wrap { overflow-x: auto; border-top: 2px solid var(--ink); }
+    table { width: 100%; min-width: 760px; border-collapse: collapse; }
+    th, td { padding: 10px; border-bottom: 1px solid var(--rule); text-align: left; }
+    th { color: var(--ink-soft); font-size: 10px; letter-spacing: .08em; }
+    th button { appearance: none; border: 0; background: transparent; color: inherit; font: inherit; font-weight: 700; letter-spacing: inherit; padding: 0; }
+    th button:hover { color: var(--accent); }
+    td.numeric, th.numeric { text-align: right; }
+    .placeholder-row { color: var(--ink-soft); text-align: center; }
+    .pagination { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-top: 14px; color: var(--ink-soft); font-size: 11px; }
+    .pagination button { border: 1px solid var(--ink); background: transparent; color: var(--ink); padding: 5px 9px; }
+    .pagination button:hover:not(:disabled) { background: var(--ink); color: var(--paper); }
+    .pagination button:disabled { cursor: not-allowed; opacity: .4; }
+
+    @media (max-width: 1020px) {
+      .filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .reset { width: fit-content; }
+      .analysis-grid { grid-template-columns: 1fr; }
+      .analysis-grid > section:first-child { padding-right: 0; border-right: 0; border-bottom: 1px solid var(--rule); }
+      .analysis-grid > section:last-child { padding-left: 0; }
+    }
+    @media (max-width: 640px) {
+      .sheet { padding: 0 18px 32px; }
+      .masthead { align-items: start; flex-direction: column; }
+      .edition { text-align: left; }
+      .filters, .kpis { grid-template-columns: 1fr; }
+      .kpi + .kpi { border-top: 1px solid var(--rule); border-left: 0; }
+      .status-line { align-items: start; flex-direction: column; }
+      .insight-grid { grid-template-columns: 1fr; }
+      .insight + .insight { padding-left: 0; border-top: 1px solid var(--rule); border-left: 0; }
+    }
+  </style>
+</head>
+<body>
+  <main class="sheet" hx-boost="false">
+    <header class="masthead">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">100</div>
+        <div>
+          <h1>Tendências de livros</h1>
+          <p class="subtitle">Leitura executiva do catálogo em destaque</p>
+        </div>
+      </div>
+      <p class="edition">Seleção da fonte: <strong>100 posições</strong><br>Preço em USD · nota quando disponível</p>
+    </header>
+
+    <form class="filters" id="filters" onsubmit="return false;" hx-on:input="this.dispatchEvent(new Event('dashboard-filter-change'))" hx-on:change="this.dispatchEvent(new Event('dashboard-filter-change'))">
+      <div class="filter-field">
+        <label for="genre-filter">Gênero principal</label>
+        <select id="genre-filter" aria-label="Filtrar por gênero principal"></select>
+      </div>
+      <div class="filter-field">
+        <label for="year-filter">Ano de publicação</label>
+        <select id="year-filter" aria-label="Filtrar por ano de publicação"></select>
+      </div>
+      <div class="filter-field">
+        <span class="filter-heading">Faixa de preço em USD</span>
+        <div class="price-pair">
+          <input id="price-min" type="number" step="0.01" aria-label="Preço mínimo">
+          <input id="price-max" type="number" step="0.01" aria-label="Preço máximo">
+        </div>
+      </div>
+      <div class="filter-field">
+        <label for="search-filter">Buscar título ou autor</label>
+        <input id="search-filter" type="search" placeholder="Ex.: Rebecca Yarros">
+      </div>
+      <button class="reset" type="button" id="reset-filters">Limpar filtros</button>
+    </form>
+
+    <div class="status-line">
+      <span id="selection-status"><strong>100 livros</strong> na seleção atual</span>
+      <span id="filter-feedback" aria-live="polite"></span>
+    </div>
+
+    <section class="kpis" id="kpis" aria-label="Indicadores da seleção">
+      <article class="kpi"><div class="kpi-label">Livros exibidos</div><div class="kpi-value" id="kpi-books">—</div><div class="kpi-detail" id="kpi-books-detail"></div></article>
+      <article class="kpi"><div class="kpi-label">Preço médio</div><div class="kpi-value" id="kpi-price">—</div><div class="kpi-detail" id="kpi-price-detail"></div></article>
+      <article class="kpi"><div class="kpi-label">Nota média</div><div class="kpi-value" id="kpi-rating">—</div><div class="kpi-detail" id="kpi-rating-detail"></div></article>
+      <article class="kpi"><div class="kpi-label">Publicados de 2014 a 2024</div><div class="kpi-value" id="kpi-recent">—</div><div class="kpi-detail" id="kpi-recent-detail"></div></article>
+    </section>
+
+    <div class="analysis-grid" id="charts">
+      <section><div class="section-heading"><h2>Composição da seleção</h2><p>Gêneros e anos</p></div><div class="chart-stack" id="composition-chart"></div></section>
+      <section><div class="section-heading"><h2>Autores em evidência</h2><p>Recorrência e relação</p></div><div class="chart-stack" id="authors-chart"></div></section>
+    </div>
+
+    <section id="insights" aria-label="Leituras para gestão"></section>
+
+    <aside class="notice"><strong>Limite de leitura:</strong> a posição é uma ordenação fornecida pela fonte. O conjunto não contém vendas, estoque, data de coleta nem método de cálculo do ranking. “Gênero principal” usa somente a primeira tag do rótulo original.</aside>
+
+    <section class="table-section" id="book-table">
+      <div class="section-heading"><h2>Consulta dos títulos</h2><p>Detalhe da população filtrada</p></div>
+      <div class="table-wrap"><table><thead><tr><th class="numeric"><button data-sort="rank">Posição</button></th><th><button data-sort="title">Título</button></th><th><button data-sort="author">Autor</button></th><th><button data-sort="main_genre">Gênero</button></th><th class="numeric"><button data-sort="year">Ano</button></th><th class="numeric"><button data-sort="price">Preço</button></th><th class="numeric"><button data-sort="rating">Nota</button></th></tr></thead><tbody id="book-table-body"></tbody></table></div>
+      <div class="pagination" id="pagination"></div>
+    </section>
+  </main>
+
+  <script>
+    const BOOKS = window.TENDENCIAS_LIVROS.books;
+    const priceBounds = {
+      min: Math.min(...BOOKS.map((book) => book.price)),
+      max: Math.max(...BOOKS.map((book) => book.price)),
+    };
+    const initialState = { genre: "Todos", year: "Todos", minPrice: priceBounds.min, maxPrice: priceBounds.max, search: "", page: 1, sort: "rank", direction: "asc" };
+    let state = { ...initialState };
+    const controls = document.getElementById("filters");
+    const formatInteger = new Intl.NumberFormat("pt-BR");
+    const formatMoney = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
+    const PAGE_SIZE = 20;
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" })[character]);
+    }
+
+    function optionMarkup(value, label = value) {
+      return `<option value="${String(value)}">${String(label)}</option>`;
+    }
+
+    function populateControls() {
+      const genres = [...new Set(BOOKS.map((book) => book.main_genre))].sort((a, b) => a.localeCompare(b, "pt-BR"));
+      const years = [...new Set(BOOKS.map((book) => book.year))].sort((a, b) => b - a);
+      document.getElementById("genre-filter").innerHTML = optionMarkup("Todos") + genres.map((genre) => optionMarkup(genre)).join("");
+      document.getElementById("year-filter").innerHTML = optionMarkup("Todos") + years.map((year) => optionMarkup(year)).join("");
+      document.getElementById("price-min").value = priceBounds.min.toFixed(2);
+      document.getElementById("price-max").value = priceBounds.max.toFixed(2);
+      document.getElementById("price-min").min = priceBounds.min;
+      document.getElementById("price-max").max = priceBounds.max;
+    }
+
+    function getFilteredBooks() {
+      const query = state.search.trim().toLocaleLowerCase("pt-BR");
+      return BOOKS.filter((book) =>
+        (state.genre === "Todos" || book.main_genre === state.genre) &&
+        (state.year === "Todos" || book.year === Number(state.year)) &&
+        book.price >= state.minPrice && book.price <= state.maxPrice &&
+        (!query || `${book.title} ${book.author}`.toLocaleLowerCase("pt-BR").includes(query))
+      );
+    }
+
+    function renderDashboard() {
+      const books = getFilteredBooks();
+      document.getElementById("selection-status").innerHTML = `<strong>${formatInteger.format(books.length)} livros</strong> na seleção atual`;
+      document.getElementById("filter-feedback").textContent = books.length ? "Filtros aplicados à página inteira" : "Nenhum livro encontrado para estes filtros";
+      renderKpis(books);
+      renderBars(books);
+      renderScatter(books);
+      renderInsights(books);
+      renderTable(books);
+    }
+
+    function readControls() {
+      state.genre = document.getElementById("genre-filter").value;
+      state.year = document.getElementById("year-filter").value;
+      state.minPrice = Number(document.getElementById("price-min").value) || priceBounds.min;
+      state.maxPrice = Number(document.getElementById("price-max").value) || priceBounds.max;
+      state.search = document.getElementById("search-filter").value;
+      if (state.minPrice > state.maxPrice) [state.minPrice, state.maxPrice] = [state.maxPrice, state.minPrice];
+      state.page = 1;
+      renderDashboard();
+    }
+
+    function resetFilters() {
+      state = { ...initialState };
+      controls.reset();
+      document.getElementById("genre-filter").value = state.genre;
+      document.getElementById("year-filter").value = state.year;
+      document.getElementById("price-min").value = state.minPrice.toFixed(2);
+      document.getElementById("price-max").value = state.maxPrice.toFixed(2);
+      renderDashboard();
+    }
+
+    function renderKpis(books) {
+      const rated = books.filter((book) => book.rating !== null);
+      const averagePrice = books.length ? books.reduce((sum, book) => sum + book.price, 0) / books.length : null;
+      const averageRating = rated.length ? rated.reduce((sum, book) => sum + book.rating, 0) / rated.length : null;
+      const recent = books.filter((book) => book.year >= 2014 && book.year <= 2024);
+      document.getElementById("kpi-books").textContent = formatInteger.format(books.length);
+      document.getElementById("kpi-books-detail").textContent = books.length ? "posições na fonte" : "Nenhum livro encontrado";
+      document.getElementById("kpi-price").textContent = averagePrice === null ? "—" : formatMoney.format(averagePrice);
+      document.getElementById("kpi-price-detail").textContent = books.length ? "média dos livros exibidos" : "Sem preços na seleção";
+      document.getElementById("kpi-rating").textContent = averageRating === null ? "—" : averageRating.toFixed(2).replace(".", ",");
+      document.getElementById("kpi-rating-detail").textContent = rated.length ? `${formatInteger.format(rated.length)} avaliações disponíveis` : "Sem avaliações disponíveis";
+      document.getElementById("kpi-recent").textContent = formatInteger.format(recent.length);
+      document.getElementById("kpi-recent-detail").textContent = books.length ? `${(recent.length / books.length * 100).toFixed(0).replace(".", ",")}% dos livros exibidos` : "Sem livros na seleção";
+    }
+
+    function groupCount(books, field) {
+      return [...books.reduce((groups, book) => groups.set(book[field], (groups.get(book[field]) || 0) + 1), new Map()).entries()]
+        .map(([label, value]) => ({ label, value }));
+    }
+
+    function horizontalBars(title, note, rows, tooltipDetail = () => "") {
+      if (!rows.length) return `<div class="pending">Nenhum livro encontrado para estes filtros.</div>`;
+      const sorted = [...rows].sort((a, b) => b.value - a.value || String(a.label).localeCompare(String(b.label), "pt-BR")).slice(0, 10);
+      const width = 520, labelSpace = 148, rowHeight = 26, height = sorted.length * rowHeight + 8, max = sorted[0].value;
+      const bars = sorted.map((row, index) => {
+        const y = index * rowHeight + 4;
+        const w = Math.max(2, (row.value / max) * (width - labelSpace - 32));
+        const tone = index === 0 ? "bar-highlight" : "bar";
+        return `<text x="0" y="${y + 13}" text-anchor="start">${escapeHtml(row.label).slice(0, 22)}</text><rect class="${tone}" x="${labelSpace}" y="${y}" width="${w}" height="15"><title>${escapeHtml(row.label)}: ${row.value} livros${tooltipDetail(row)}</title></rect><text class="value-label" x="${labelSpace + w + 6}" y="${y + 12}">${row.value}</text>`;
+      }).join("");
+      return `<figure class="chart-figure"><figcaption class="chart-caption">${title}</figcaption><p class="chart-note">${note}</p><svg class="chart-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(title)}">${bars}</svg></figure>`;
+    }
+
+    function yearBars(books) {
+      if (!books.length) return `<div class="pending">Nenhum livro encontrado para estes filtros.</div>`;
+      const rows = groupCount(books, "year").sort((a, b) => Number(a.label) - Number(b.label));
+      const width = 520, height = 165, pad = 24, baseline = 128, chartHeight = 90, max = Math.max(...rows.map((row) => row.value));
+      const step = (width - pad * 2) / rows.length;
+      const bars = rows.map((row, index) => {
+        const barWidth = Math.max(3, step - 4), barHeight = row.value / max * chartHeight, x = pad + index * step + 2, y = baseline - barHeight;
+        const label = rows.length > 14 && index % Math.ceil(rows.length / 10) !== 0 ? "" : row.label;
+        return `<rect class="${row.value === max ? "bar-highlight" : "bar"}" x="${x}" y="${y}" width="${barWidth}" height="${barHeight}"><title>${row.label}: ${row.value} livros</title></rect><text class="value-label" x="${x + barWidth / 2}" y="${y - 4}" text-anchor="middle">${row.value}</text><text x="${x + barWidth / 2}" y="${baseline + 16}" text-anchor="middle">${label}</text>`;
+      }).join("");
+      return `<figure class="chart-figure"><figcaption class="chart-caption">Publicações por ano</figcaption><p class="chart-note">Quantidade de livros por ano de publicação — não representa uma série histórica do ranking.</p><svg class="chart-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Livros por ano de publicação"><line class="axis" x1="${pad}" y1="${baseline}" x2="${width - pad}" y2="${baseline}"></line>${bars}</svg></figure>`;
+    }
+
+    function renderBars(books) {
+      const composition = document.getElementById("composition-chart");
+      const authors = document.getElementById("authors-chart");
+      composition.innerHTML = horizontalBars("Gêneros com mais títulos", "Contagem pela primeira tag de gênero da fonte.", groupCount(books, "main_genre")) + yearBars(books);
+      const authorRows = [...books.reduce((groups, book) => {
+        const current = groups.get(book.author) || { label: book.author, value: 0, bestRank: book.rank };
+        current.value += 1; current.bestRank = Math.min(current.bestRank, book.rank); groups.set(book.author, current); return groups;
+      }, new Map()).values()].map(({ label, value, bestRank }) => ({ label, value, bestRank }));
+      authors.innerHTML = horizontalBars("Autores mais recorrentes", "O maior destaque mostra presença no ranking; o tooltip mostra a melhor posição.", authorRows, (row) => ` · Melhor posição: ${row.bestRank}`);
+    }
+
+    function renderScatter(books) {
+      const container = document.getElementById("authors-chart");
+      const rated = books.filter((book) => book.rating !== null);
+      if (!rated.length) { container.insertAdjacentHTML("beforeend", '<div class="pending">Sem avaliações disponíveis para comparar preço e nota.</div>'); return; }
+      const width = 520, height = 210, left = 36, right = 16, top = 15, bottom = 33;
+      const minPrice = Math.min(...rated.map((book) => book.price)), maxPrice = Math.max(...rated.map((book) => book.price));
+      const minRating = Math.min(...rated.map((book) => book.rating)), maxRating = Math.max(...rated.map((book) => book.rating));
+      const x = (value) => left + ((value - minPrice) / (maxPrice - minPrice || 1)) * (width - left - right);
+      const y = (value) => height - bottom - ((value - minRating) / (maxRating - minRating || 1)) * (height - top - bottom);
+      const points = rated.map((book) => `<circle class="point" cx="${x(book.price)}" cy="${y(book.rating)}" r="4"><title>${escapeHtml(book.title)} — ${escapeHtml(book.author)} | posição ${book.rank} | ${formatMoney.format(book.price)} | nota ${book.rating.toFixed(1).replace(".", ",")}</title></circle>`).join("");
+      container.insertAdjacentHTML("beforeend", `<figure class="chart-figure"><figcaption class="chart-caption">Preço e nota dos títulos</figcaption><p class="chart-note">Cada ponto é um livro; passe o cursor para ver título, autor e posição.</p><svg class="chart-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Relação entre preço em dólares e nota"><line class="axis" x1="${left}" y1="${height - bottom}" x2="${width - right}" y2="${height - bottom}"></line><line class="axis" x1="${left}" y1="${top}" x2="${left}" y2="${height - bottom}"></line><text x="${left}" y="${height - 10}">${formatMoney.format(minPrice)}</text><text x="${width - right}" y="${height - 10}" text-anchor="end">${formatMoney.format(maxPrice)}</text><text x="${left - 5}" y="${height - bottom}" text-anchor="end">${minRating.toFixed(1)}</text><text x="${left - 5}" y="${top + 5}" text-anchor="end">${maxRating.toFixed(1)}</text>${points}</svg><div class="scatter-key"><span>Preço em USD</span><span>Nota · ${rated.length} avaliados${books.length - rated.length ? ` · ${books.length - rated.length} sem nota` : ""}</span></div></figure>`);
+    }
+
+    function renderInsights(books) {
+      const container = document.getElementById("insights");
+      if (!books.length) { container.innerHTML = '<div class="pending">Nenhum livro encontrado para estes filtros. Ajuste ou limpe os controles acima.</div>'; return; }
+      const leadingGenre = groupCount(books, "main_genre").sort((a, b) => b.value - a.value)[0];
+      const leadingAuthor = groupCount(books, "author").sort((a, b) => b.value - a.value)[0];
+      const years = books.map((book) => book.year);
+      container.innerHTML = `<div class="insight-grid"><article class="insight"><div class="insight-label">Composição</div><p class="insight-text">${escapeHtml(leadingGenre.label)} reúne ${leadingGenre.value} ${leadingGenre.value === 1 ? "título" : "títulos"} na seleção.</p></article><article class="insight"><div class="insight-label">Recorrência</div><p class="insight-text">${escapeHtml(leadingAuthor.label)} aparece ${leadingAuthor.value} ${leadingAuthor.value === 1 ? "vez" : "vezes"}.</p></article><article class="insight"><div class="insight-label">Publicação</div><p class="insight-text">Os livros vão de ${Math.min(...years)} a ${Math.max(...years)}.</p></article></div>`;
+    }
+
+    function compareBooks(left, right) {
+      const a = left[state.sort], b = right[state.sort];
+      const direction = state.direction === "asc" ? 1 : -1;
+      if (a === null) return 1 * direction;
+      if (b === null) return -1 * direction;
+      return typeof a === "string" ? a.localeCompare(b, "pt-BR") * direction : (a - b) * direction;
+    }
+
+    function renderTable(books) {
+      const body = document.getElementById("book-table-body");
+      const pagination = document.getElementById("pagination");
+      if (!books.length) { body.innerHTML = '<tr><td class="placeholder-row" colspan="7">Nenhum livro encontrado para estes filtros.</td></tr>'; pagination.innerHTML = ""; return; }
+      const sortedBooks = [...books].sort(compareBooks);
+      const totalPages = Math.ceil(sortedBooks.length / PAGE_SIZE);
+      state.page = Math.min(state.page, totalPages);
+      const pageRows = sortedBooks.slice((state.page - 1) * PAGE_SIZE, state.page * PAGE_SIZE);
+      body.innerHTML = pageRows.map((book) => `<tr><td class="numeric">${book.rank}</td><td>${escapeHtml(book.title)}</td><td>${escapeHtml(book.author)}</td><td>${escapeHtml(book.main_genre)}</td><td class="numeric">${book.year}</td><td class="numeric">${formatMoney.format(book.price)}</td><td class="numeric">${book.rating === null ? "—" : book.rating.toFixed(1).replace(".", ",")}</td></tr>`).join("");
+      pagination.innerHTML = `<button type="button" id="previous-page" ${state.page === 1 ? "disabled" : ""}>Anterior</button><span>Página ${state.page} de ${totalPages} · ${books.length} livros</span><button type="button" id="next-page" ${state.page === totalPages ? "disabled" : ""}>Próxima</button>`;
+      document.getElementById("previous-page").addEventListener("click", () => { state.page -= 1; renderTable(books); });
+      document.getElementById("next-page").addEventListener("click", () => { state.page += 1; renderTable(books); });
+    }
+
+    controls.addEventListener("dashboard-filter-change", readControls);
+    document.getElementById("reset-filters").addEventListener("click", resetFilters);
+    document.querySelectorAll("[data-sort]").forEach((button) => button.addEventListener("click", () => {
+      const field = button.dataset.sort;
+      state.direction = state.sort === field && state.direction === "asc" ? "desc" : "asc";
+      state.sort = field; state.page = 1; renderTable(getFilteredBooks());
+    }));
+    populateControls();
+    renderDashboard();
+  </script>
+</body>
+</html>
