@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vendas Superstore EUA · painel executivo</title>
+<style>
+:root{
+  --bg:#f4f5f7; --plane:#ffffff; --plane-2:#eef1f5; --stroke:#d6dce4;
+  --ink:#0f2b46; --ink-2:#40556b; --muted:#606c7c;
+  --acc:#0f2b46; --acc-2:#8a6a2f; --good:#1c7a4f; --bad:#a32020;
+  --track:#dde3ea; --grid:#e8ecf1; --radius:4px; --bw:1px;
+  --shadow:0 1px 2px rgba(15,43,70,.05), 0 12px 30px -14px rgba(15,43,70,.16);
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);
+  font-family:"Source Sans 3",system-ui,-apple-system,"Segoe UI",sans-serif;
+  -webkit-font-smoothing:antialiased;padding:28px}
+.app{max-width:1420px;margin:0 auto}
+.topo{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-bottom:22px;flex-wrap:wrap}
+.marca h1{font-size:21px;font-weight:700;letter-spacing:-.3px}
+.marca p{font-size:12.5px;color:var(--muted);margin-top:3px}
+.filtros{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.filtros label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.filtros select{padding:9px 12px;border:var(--bw) solid var(--stroke);border-radius:var(--radius);
+  background:var(--plane);font-size:13px;font-weight:600;color:var(--ink);box-shadow:var(--shadow)}
+.filtros button{padding:9px 14px;border:var(--bw) solid var(--stroke);border-radius:var(--radius);
+  background:var(--plane-2);font-size:13px;font-weight:700;color:var(--ink-2);cursor:pointer}
+.filtros button:hover{background:var(--track)}
+.periodo{display:inline-flex;align-items:center;gap:8px;padding:9px 15px;border:var(--bw) solid var(--stroke);
+  border-radius:var(--radius);background:var(--plane);font-size:13px;font-weight:600;box-shadow:var(--shadow)}
+.grade{display:grid;grid-template-columns:repeat(12,1fr);gap:18px}
+.grade>div{min-width:0;display:flex;flex-direction:column}
+.grade>div>*{flex:1}
+.card{background:var(--plane);border:var(--bw) solid var(--stroke);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:20px 22px}
+.card-h{display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:14px}
+.card-h b{font-size:14px;font-weight:600}
+.card-h span{font-size:12px;color:var(--muted);display:block;margin-top:3px}
+.kpis{display:flex;gap:14px;flex-wrap:wrap}
+.kpi{flex:1 1 160px;background:var(--plane);border:var(--bw) solid var(--stroke);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:16px 18px}
+.kpi .lb{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.kpi .vl{font-size:24px;font-weight:700;margin-top:6px;font-family:var(--mono);font-variant-numeric:tabular-nums}
+.kpi .sb{font-size:12px;color:var(--muted);margin-top:4px}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:10.5px;color:var(--muted);font-weight:600;text-transform:uppercase;
+  letter-spacing:.06em;padding:0 8px 10px 0;border-bottom:var(--bw) solid var(--stroke)}
+th.num,td.num{text-align:right}
+td{padding:9px 8px 9px 0;font-size:13px;color:var(--ink-2);border-bottom:var(--bw) solid var(--stroke)}
+td.num{font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--ink)}
+tr.dest td{background:var(--plane-2);font-weight:700}
+.bar-row{display:grid;grid-template-columns:118px 1fr auto;gap:10px;align-items:center;padding:5px 0}
+.bar-lb{font-size:12.5px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-tr{background:var(--track);border-radius:3px;height:18px;position:relative}
+.bar-fl{height:100%;border-radius:3px;min-width:2px}
+.bar-vl{font-size:12.5px;font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--ink);white-space:nowrap}
+.leg{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px}
+.leg span{font-size:12px;color:var(--ink-2)}
+.leg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px}
+.stack{display:flex;height:26px;border-radius:3px;overflow:hidden;background:var(--track);margin:6px 0 2px}
+.stack div{height:100%}
+.stack-lb{font-size:12.5px;color:var(--ink-2);margin-top:10px}
+.insight p.lead{font-size:16px;font-weight:600;line-height:1.45;margin-bottom:10px}
+.insight p, .insight li{font-size:13.5px;color:var(--ink-2);line-height:1.6}
+.insight ul{margin:12px 0 0;padding-left:18px}
+.insight li{margin-top:6px}
+.rodape{margin-top:20px;font-size:12px;color:var(--muted)}
+svg text{font-family:inherit}
+@media (max-width:900px){.grade>div{grid-column:span 12 !important}.bar-row{grid-template-columns:96px 1fr auto}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topo">
+    <div class="marca">
+      <h1>Vendas Superstore EUA · painel executivo</h1>
+      <p>9.800 linhas · 793 clientes · 4.922 pedidos · base train.csv</p>
+    </div>
+    <div class="filtros">
+      <label for="f-reg">Região</label>
+      <select id="f-reg">
+        <option value="Todas">Todas</option>
+        <option value="West">Oeste</option>
+        <option value="East">Leste</option>
+        <option value="Central">Centro</option>
+        <option value="South">Sul</option>
+      </select>
+      <label for="f-cat">Categoria</label>
+      <select id="f-cat">
+        <option value="Todas">Todas</option>
+        <option value="Technology">Tecnologia</option>
+        <option value="Furniture">Móveis</option>
+        <option value="Office Supplies">Material de escritório</option>
+      </select>
+      <label for="f-ano">Ano</label>
+      <select id="f-ano">
+        <option value="Todos">Todos</option>
+        <option value="2015">2015</option>
+        <option value="2016">2016</option>
+        <option value="2017">2017</option>
+        <option value="2018">2018</option>
+      </select>
+      <button id="f-limpar" type="button">Limpar</button>
+    </div>
+    <span class="periodo">2015–2018</span>
+  </div>
+  <div class="grade">
+    <div style="grid-column:span 12"><div class="kpis" id="kpis"></div></div>
+    <div style="grid-column:span 8"><section class="card">
+      <div class="card-h"><div><b id="t-evolucao">Receita cresce após 2016 em todas as regiões</b><span>Evolução anual em US$ · filtro de categoria aplicado</span></div></div>
+      <div id="ch-evolucao"></div><div class="leg" id="leg-evolucao"></div>
+    </section></div>
+    <div style="grid-column:span 4"><section class="card">
+      <div class="card-h"><div><b>Tecnologia fatura mais com menos itens</b><span>Receita por categoria em US$</span></div></div>
+      <div id="ch-categoria"></div>
+    </section></div>
+    <div style="grid-column:span 7"><section class="card">
+      <div class="card-h"><div><b>O gap é base e recompra, não preço</b><span>Funil por região · clientes → pedidos → receita</span></div></div>
+      <table><thead><tr><th>Região</th><th class="num">Receita</th><th class="num">Pedidos</th><th class="num">Clientes</th><th class="num">Ped./cli</th><th class="num">Tíquete</th></tr></thead>
+      <tbody id="tb-funil"></tbody></table>
+    </section></div>
+    <div style="grid-column:span 5"><section class="card">
+      <div class="card-h"><div><b>Oeste recompra 44% mais que o Sul</b><span>Pedidos por cliente · tíquete parecido</span></div></div>
+      <div id="ch-recompra"></div>
+      <div class="card-h" style="margin-top:14px"><div><b>Tíquete por pedido em US$</b></div></div>
+      <div id="ch-tiquete"></div>
+    </section></div>
+    <div style="grid-column:span 7"><section class="card">
+      <div class="card-h"><div><b>Telefones e cadeiras puxam a receita</b><span>Top subcategorias em US$ · respeita região e ano</span></div></div>
+      <div id="ch-subcat"></div>
+    </section></div>
+    <div style="grid-column:span 5"><section class="card">
+      <div class="card-h"><div><b id="t-estados">Poucos estados carregam cada região</b><span>Concentração da receita</span></div></div>
+      <div id="ch-estados"></div>
+    </section></div>
+    <div style="grid-column:span 6"><section class="card">
+      <div class="card-h"><div><b>O mix de clientes é igual em toda parte</b><span>Perfil por região · % de linhas</span></div></div>
+      <div id="ch-segmix"></div><div class="leg" id="leg-segmix"></div>
+    </section></div>
+    <div style="grid-column:span 6"><section class="card">
+      <div class="card-h"><div><b>Entrega cumpre a promessa do frete</b><span>Prazo médio em dias · volume entre parênteses</span></div></div>
+      <div id="ch-ship"></div>
+    </section></div>
+    <div style="grid-column:span 12"><section class="card insight">
+      <div class="card-h"><div><b>O que este painel está dizendo</b></div></div>
+      <p class="lead" id="insight-dinamico"></p>
+      <ul>
+        <li>Oeste (2,3 pedidos por cliente) e Leste recompram mais; Sul (1,6) e Centro trazem menos clientes e com menos retorno.</li>
+        <li>Oeste depende de Califórnia + Washington (82%) e Leste de Nova York + Pensilvânia (63%); o Sul é pulverizado e sofreu mais em 2016.</li>
+        <li>Prioridade: conquistar clientes no Sul/Centro e aumentar a recompra — tíquete e mix não são o problema.</li>
+      </ul>
+      <p style="margin-top:10px">Limites: análise só com valor de venda, sem custo nem lucro. País único, sem comparação internacional.</p>
+    </section></div>
+  </div>
+  <p class="rodape">Fonte: .data/train.csv · 9.800 linhas · 2015–2018 · Painel autocontido: dados embutidos, sem internet, sem servidor.</p>
+</div>
+<script>
+const DADOS = {"cubo": {"Central|Furniture|2015": {"receita": 32814.0, "linhas": 91, "pedidos": 77, "clientes": 73}, "Central|Furniture|2016": {"receita": 35209.0, "linhas": 101, "pedidos": 84, "clientes": 80}, "Central|Furniture|2017": {"receita": 49732.0, "linhas": 132, "pedidos": 111, "clientes": 105}, "Central|Furniture|2018": {"receita": 42563.0, "linhas": 146, "pedidos": 121, "clientes": 111}, "Central|Furniture|Todos": {"receita": 160317.0, "linhas": 470, "pedidos": 393, "clientes": 312}, "Central|Office Supplies|2015": {"receita": 36781.0, "linhas": 294, "pedidos": 173, "clientes": 157}, "Central|Office Supplies|2016": {"receita": 25396.0, "linhas": 270, "pedidos": 173, "clientes": 153}, "Central|Office Supplies|2017": {"receita": 45598.0, "linhas": 346, "pedidos": 210, "clientes": 189}, "Central|Office Supplies|2018": {"receita": 55815.0, "linhas": 489, "pedidos": 309, "clientes": 264}, "Central|Office Supplies|Todos": {"receita": 163590.0, "linhas": 1399, "pedidos": 865, "clientes": 537}, "Central|Technology|2015": {"receita": 33325.0, "linhas": 70, "pedidos": 59, "clientes": 58}, "Central|Technology|2016": {"receita": 41821.0, "linhas": 103, "pedidos": 84, "clientes": 82}, "Central|Technology|2017": {"receita": 50344.0, "linhas": 113, "pedidos": 100, "clientes": 94}, "Central|Technology|2018": {"receita": 43250.0, "linhas": 122, "pedidos": 105, "clientes": 98}, "Central|Technology|Todos": {"receita": 168739.0, "linhas": 408, "pedidos": 348, "clientes": 290}, "Central|Todas|2015": {"receita": 102921.0, "linhas": 455, "pedidos": 223, "clientes": 200}, "Central|Todas|2016": {"receita": 102425.0, "linhas": 474, "pedidos": 233, "clientes": 200}, "Central|Todas|2017": {"receita": 145674.0, "linhas": 591, "pedidos": 300, "clientes": 259}, "Central|Todas|2018": {"receita": 141627.0, "linhas": 757, "pedidos": 400, "clientes": 322}, "Central|Todas|Todos": {"receita": 492647.0, "linhas": 2277, "pedidos": 1156, "clientes": 626}, "East|Furniture|2015": {"receita": 46833.0, "linhas": 115, "pedidos": 93, "clientes": 90}, "East|Furniture|2016": {"receita": 53810.0, "linhas": 125, "pedidos": 100, "clientes": 97}, "East|Furniture|2017": {"receita": 44964.0, "linhas": 154, "pedidos": 131, "clientes": 116}, "East|Furniture|2018": {"receita": 60854.0, "linhas": 197, "pedidos": 156, "clientes": 138}, "East|Furniture|Todos": {"receita": 206461.0, "linhas": 591, "pedidos": 480, "clientes": 368}, "East|Office Supplies|2015": {"receita": 35657.0, "linhas": 307, "pedidos": 199, "clientes": 180}, "East|Office Supplies|2016": {"receita": 40079.0, "linhas": 369, "pedidos": 228, "clientes": 198}, "East|Office Supplies|2017": {"receita": 61050.0, "linhas": 464, "pedidos": 274, "clientes": 233}, "East|Office Supplies|2018": {"receita": 63155.0, "linhas": 527, "pedidos": 347, "clientes": 291}, "East|Office Supplies|Todos": {"receita": 199941.0, "linhas": 1667, "pedidos": 1048, "clientes": 605}, "East|Technology|2015": {"receita": 45163.0, "linhas": 84, "pedidos": 72, "clientes": 70}, "East|Technology|2016": {"receita": 59336.0, "linhas": 132, "pedidos": 103, "clientes": 99}, "East|Technology|2017": {"receita": 72497.0, "linhas": 127, "pedidos": 105, "clientes": 100}, "East|Technology|2018": {"receita": 86120.0, "linhas": 184, "pedidos": 156, "clientes": 139}, "East|Technology|Todos": {"receita": 263117.0, "linhas": 527, "pedidos": 436, "clientes": 349}, "East|Todas|2015": {"receita": 127653.0, "linhas": 506, "pedidos": 255, "clientes": 225}, "East|Todas|2016": {"receita": 153225.0, "linhas": 626, "pedidos": 287, "clientes": 239}, "East|Todas|2017": {"receita": 178512.0, "linhas": 745, "pedidos": 365, "clientes": 297}, "East|Todas|2018": {"receita": 210129.0, "linhas": 908, "pedidos": 462, "clientes": 348}, "East|Todas|Todos": {"receita": 669519.0, "linhas": 2785, "pedidos": 1369, "clientes": 669}, "South|Furniture|2015": {"receita": 26943.0, "linhas": 64, "pedidos": 54, "clientes": 54}, "South|Furniture|2016": {"receita": 23845.0, "linhas": 71, "pedidos": 59, "clientes": 58}, "South|Furniture|2017": {"receita": 27876.0, "linhas": 84, "pedidos": 72, "clientes": 70}, "South|Furniture|2018": {"receita": 37868.0, "linhas": 107, "pedidos": 87, "clientes": 82}, "South|Furniture|Todos": {"receita": 116531.0, "linhas": 326, "pedidos": 272, "clientes": 237}, "South|Office Supplies|2015": {"receita": 25786.0, "linhas": 213, "pedidos": 125, "clientes": 118}, "South|Office Supplies|2016": {"receita": 30229.0, "linhas": 205, "pedidos": 125, "clientes": 117}, "South|Office Supplies|2017": {"receita": 28638.0, "linhas": 253, "pedidos": 159, "clientes": 146}, "South|Office Supplies|2018": {"receita": 39773.0, "linhas": 312, "pedidos": 204, "clientes": 170}, "South|Office Supplies|Todos": {"receita": 124425.0, "linhas": 983, "pedidos": 613, "clientes": 421}, "South|Technology|2015": {"receita": 50646.0, "linhas": 67, "pedidos": 55, "clientes": 55}, "South|Technology|2016": {"receita": 16003.0, "linhas": 54, "pedidos": 49, "clientes": 49}, "South|Technology|2017": {"receita": 37022.0, "linhas": 74, "pedidos": 67, "clientes": 61}, "South|Technology|2018": {"receita": 44524.0, "linhas": 94, "pedidos": 81, "clientes": 75}, "South|Technology|Todos": {"receita": 148195.0, "linhas": 289, "pedidos": 252, "clientes": 217}, "South|Todas|2015": {"receita": 103375.0, "linhas": 344, "pedidos": 161, "clientes": 152}, "South|Todas|2016": {"receita": 70076.0, "linhas": 330, "pedidos": 167, "clientes": 154}, "South|Todas|2017": {"receita": 93536.0, "linhas": 411, "pedidos": 213, "clientes": 186}, "South|Todas|2018": {"receita": 122165.0, "linhas": 513, "pedidos": 269, "clientes": 221}, "South|Todas|Todos": {"receita": 389151.0, "linhas": 1598, "pedidos": 810, "clientes": 509}, "West|Furniture|2015": {"receita": 49887.0, "linhas": 144, "pedidos": 122, "clientes": 114}, "West|Furniture|2016": {"receita": 51191.0, "linhas": 143, "pedidos": 119, "clientes": 113}, "West|Furniture|2017": {"receita": 73241.0, "linhas": 177, "pedidos": 150, "clientes": 138}, "West|Furniture|2018": {"receita": 71029.0, "linhas": 227, "pedidos": 191, "clientes": 177}, "West|Furniture|Todos": {"receita": 245348.0, "linhas": 691, "pedidos": 582, "clientes": 416}, "West|Office Supplies|2015": {"receita": 51289.0, "linhas": 378, "pedidos": 233, "clientes": 208}, "West|Office Supplies|2016": {"receita": 37421.0, "linhas": 366, "pedidos": 236, "clientes": 205}, "West|Office Supplies|2017": {"receita": 47131.0, "linhas": 474, "pedidos": 288, "clientes": 244}, "West|Office Supplies|2018": {"receita": 81625.0, "linhas": 642, "pedidos": 393, "clientes": 320}, "West|Office Supplies|Todos": {"receita": 217467.0, "linhas": 1860, "pedidos": 1150, "clientes": 600}, "West|Technology|2015": {"receita": 44731.0, "linhas": 126, "pedidos": 98, "clientes": 91}, "West|Technology|2016": {"receita": 45098.0, "linhas": 116, "pedidos": 99, "clientes": 94}, "West|Technology|2017": {"receita": 62099.0, "linhas": 136, "pedidos": 111, "clientes": 100}, "West|Technology|2018": {"receita": 95477.0, "linhas": 211, "pedidos": 175, "clientes": 159}, "West|Technology|Todos": {"receita": 247405.0, "linhas": 589, "pedidos": 483, "clientes": 359}, "West|Todas|2015": {"receita": 145908.0, "linhas": 648, "pedidos": 308, "clientes": 266}, "West|Todas|2016": {"receita": 133710.0, "linhas": 625, "pedidos": 332, "clientes": 271}, "West|Todas|2017": {"receita": 182471.0, "linhas": 787, "pedidos": 417, "clientes": 326}, "West|Todas|2018": {"receita": 248131.0, "linhas": 1080, "pedidos": 530, "clientes": 393}, "West|Todas|Todos": {"receita": 710220.0, "linhas": 3140, "pedidos": 1587, "clientes": 681}, "Todas|Furniture|2015": {"receita": 156478.0, "linhas": 414, "pedidos": 346, "clientes": 286}, "Todas|Furniture|2016": {"receita": 164054.0, "linhas": 440, "pedidos": 362, "clientes": 284}, "Todas|Furniture|2017": {"receita": 195813.0, "linhas": 547, "pedidos": 464, "clientes": 350}, "Todas|Furniture|2018": {"receita": 212314.0, "linhas": 677, "pedidos": 555, "clientes": 400}, "Todas|Furniture|Todos": {"receita": 728659.0, "linhas": 2078, "pedidos": 1727, "clientes": 705}, "Todas|Office Supplies|2015": {"receita": 149513.0, "linhas": 1192, "pedidos": 730, "clientes": 503}, "Todas|Office Supplies|2016": {"receita": 133124.0, "linhas": 1210, "pedidos": 762, "clientes": 495}, "Todas|Office Supplies|2017": {"receita": 182418.0, "linhas": 1537, "pedidos": 931, "clientes": 542}, "Todas|Office Supplies|2018": {"receita": 240368.0, "linhas": 1970, "pedidos": 1253, "clientes": 631}, "Todas|Office Supplies|Todos": {"receita": 705422.0, "linhas": 5909, "pedidos": 3676, "clientes": 787}, "Todas|Technology|2015": {"receita": 173866.0, "linhas": 347, "pedidos": 284, "clientes": 243}, "Todas|Technology|2016": {"receita": 162258.0, "linhas": 405, "pedidos": 335, "clientes": 275}, "Todas|Technology|2017": {"receita": 221962.0, "linhas": 450, "pedidos": 383, "clientes": 286}, "Todas|Technology|2018": {"receita": 269371.0, "linhas": 611, "pedidos": 517, "clientes": 385}, "Todas|Technology|Todos": {"receita": 827456.0, "linhas": 1813, "pedidos": 1519, "clientes": 684}, "Todas|Todas|2015": {"receita": 479856.0, "linhas": 1953, "pedidos": 947, "clientes": 589}, "Todas|Todas|2016": {"receita": 459436.0, "linhas": 2055, "pedidos": 1019, "clientes": 567}, "Todas|Todas|2017": {"receita": 600193.0, "linhas": 2534, "pedidos": 1295, "clientes": 635}, "Todas|Todas|2018": {"receita": 722052.0, "linhas": 3258, "pedidos": 1661, "clientes": 690}, "Todas|Todas|Todos": {"receita": 2261537.0, "linhas": 9800, "pedidos": 4922, "clientes": 793}}, "evolucao": {"Central|Furniture": {"2015": 32814.0, "2016": 35209.0, "2017": 49732.0, "2018": 42563.0}, "Central|Office Supplies": {"2015": 36781.0, "2016": 25396.0, "2017": 45598.0, "2018": 55815.0}, "Central|Technology": {"2015": 33325.0, "2016": 41821.0, "2017": 50344.0, "2018": 43250.0}, "Central|Todas": {"2015": 102921.0, "2016": 102425.0, "2017": 145674.0, "2018": 141627.0}, "East|Furniture": {"2015": 46833.0, "2016": 53810.0, "2017": 44964.0, "2018": 60854.0}, "East|Office Supplies": {"2015": 35657.0, "2016": 40079.0, "2017": 61050.0, "2018": 63155.0}, "East|Technology": {"2015": 45163.0, "2016": 59336.0, "2017": 72497.0, "2018": 86120.0}, "East|Todas": {"2015": 127653.0, "2016": 153225.0, "2017": 178512.0, "2018": 210129.0}, "South|Furniture": {"2015": 26943.0, "2016": 23845.0, "2017": 27876.0, "2018": 37868.0}, "South|Office Supplies": {"2015": 25786.0, "2016": 30229.0, "2017": 28638.0, "2018": 39773.0}, "South|Technology": {"2015": 50646.0, "2016": 16003.0, "2017": 37022.0, "2018": 44524.0}, "South|Todas": {"2015": 103375.0, "2016": 70076.0, "2017": 93536.0, "2018": 122165.0}, "West|Furniture": {"2015": 49887.0, "2016": 51191.0, "2017": 73241.0, "2018": 71029.0}, "West|Office Supplies": {"2015": 51289.0, "2016": 37421.0, "2017": 47131.0, "2018": 81625.0}, "West|Technology": {"2015": 44731.0, "2016": 45098.0, "2017": 62099.0, "2018": 95477.0}, "West|Todas": {"2015": 145908.0, "2016": 133710.0, "2017": 182471.0, "2018": 248131.0}, "Todas|Furniture": {"2015": 156478.0, "2016": 164054.0, "2017": 195813.0, "2018": 212314.0}, "Todas|Office Supplies": {"2015": 149513.0, "2016": 133124.0, "2017": 182418.0, "2018": 240368.0}, "Todas|Technology": {"2015": 173866.0, "2016": 162258.0, "2017": 221962.0, "2018": 269371.0}, "Todas|Todas": {"2015": 479856.0, "2016": 459436.0, "2017": 600193.0, "2018": 722052.0}}, "subcat": {"Central|2015": {"Chairs": 20754.0, "Machines": 16292.0, "Binders": 15871.0, "Storage": 10961.0, "Phones": 9926.0, "Tables": 7785.0, "Accessories": 3837.0, "Appliances": 3659.0, "Copiers": 3270.0, "Furnishings": 2441.0, "Paper": 2281.0, "Bookcases": 1834.0, "Envelopes": 1599.0, "Labels": 1033.0, "Art": 822.0, "Supplies": 440.0, "Fasteners": 116.0}, "Central|2016": {"Phones": 19364.0, "Chairs": 17909.0, "Copiers": 12810.0, "Storage": 8331.0, "Bookcases": 7914.0, "Accessories": 7795.0, "Tables": 6857.0, "Binders": 5891.0, "Appliances": 4975.0, "Paper": 3479.0, "Furnishings": 2529.0, "Machines": 1852.0, "Art": 1132.0, "Envelopes": 871.0, "Supplies": 324.0, "Labels": 305.0, "Fasteners": 89.0}, "Central|2017": {"Chairs": 22418.0, "Phones": 19507.0, "Copiers": 17500.0, "Binders": 14018.0, "Tables": 13923.0, "Storage": 12812.0, "Accessories": 10678.0, "Bookcases": 8385.0, "Appliances": 6015.0, "Paper": 5309.0, "Furnishings": 5006.0, "Supplies": 4295.0, "Machines": 2659.0, "Art": 1520.0, "Envelopes": 871.0, "Labels": 511.0, "Fasteners": 247.0}, "Central|2018": {"Phones": 23143.0, "Chairs": 21293.0, "Binders": 21086.0, "Storage": 13304.0, "Tables": 10589.0, "Accessories": 10432.0, "Appliances": 6528.0, "Paper": 6116.0, "Machines": 5995.0, "Bookcases": 5640.0, "Furnishings": 5040.0, "Supplies": 4408.0, "Copiers": 3680.0, "Art": 2272.0, "Envelopes": 1197.0, "Labels": 587.0, "Fasteners": 318.0}, "Central|Todos": {"Chairs": 82373.0, "Phones": 71940.0, "Binders": 56865.0, "Storage": 45407.0, "Tables": 39155.0, "Copiers": 37260.0, "Accessories": 32742.0, "Machines": 26797.0, "Bookcases": 23774.0, "Appliances": 21177.0, "Paper": 17185.0, "Furnishings": 15016.0, "Supplies": 9467.0, "Art": 5746.0, "Envelopes": 4537.0, "Labels": 2436.0, "Fasteners": 770.0}, "East|2015": {"Chairs": 22008.0, "Phones": 20524.0, "Storage": 16207.0, "Machines": 14636.0, "Bookcases": 10863.0, "Tables": 10273.0, "Binders": 6315.0, "Accessories": 5903.0, "Appliances": 5779.0, "Copiers": 4100.0, "Furnishings": 3689.0, "Paper": 3643.0, "Envelopes": 1348.0, "Art": 1290.0, "Labels": 516.0, "Supplies": 461.0, "Fasteners": 97.0}, "East|2016": {"Phones": 22118.0, "Chairs": 20009.0, "Bookcases": 19653.0, "Accessories": 17831.0, "Machines": 14427.0, "Binders": 13066.0, "Storage": 12140.0, "Tables": 8885.0, "Appliances": 6678.0, "Furnishings": 5263.0, "Copiers": 4960.0, "Paper": 3872.0, "Art": 1707.0, "Supplies": 1126.0, "Envelopes": 813.0, "Labels": 485.0, "Fasteners": 192.0}, "East|2017": {"Machines": 25216.0, "Chairs": 22437.0, "Storage": 22059.0, "Phones": 21290.0, "Copiers": 19760.0, "Binders": 18785.0, "Appliances": 9393.0, "Furnishings": 8737.0, "Tables": 7825.0, "Accessories": 6231.0, "Bookcases": 5964.0, "Paper": 4671.0, "Supplies": 2051.0, "Art": 1837.0, "Envelopes": 1131.0, "Labels": 779.0, "Fasteners": 344.0}, "East|2018": {"Phones": 35952.0, "Chairs": 31233.0, "Copiers": 24400.0, "Storage": 19022.0, "Accessories": 13941.0, "Binders": 13090.0, "Appliances": 12269.0, "Machines": 11827.0, "Tables": 11826.0, "Furnishings": 10457.0, "Paper": 7352.0, "Bookcases": 7338.0, "Supplies": 7018.0, "Art": 2597.0, "Envelopes": 847.0, "Labels": 775.0, "Fasteners": 187.0}, "East|Todos": {"Phones": 99885.0, "Chairs": 95688.0, "Storage": 69429.0, "Machines": 66106.0, "Copiers": 53219.0, "Binders": 51256.0, "Accessories": 43906.0, "Bookcases": 43819.0, "Tables": 38809.0, "Appliances": 34119.0, "Furnishings": 28145.0, "Paper": 19538.0, "Supplies": 10655.0, "Art": 7431.0, "Envelopes": 4138.0, "Labels": 2555.0, "Fasteners": 820.0}, "South|2015": {"Machines": 27595.0, "Phones": 17249.0, "Chairs": 13072.0, "Tables": 9941.0, "Binders": 8178.0, "Storage": 6715.0, "Accessories": 5323.0, "Supplies": 4247.0, "Paper": 3141.0, "Furnishings": 3135.0, "Appliances": 2120.0, "Bookcases": 794.0, "Art": 566.0, "Copiers": 480.0, "Labels": 401.0, "Envelopes": 252.0, "Fasteners": 166.0}, "South|2016": {"Binders": 13329.0, "Chairs": 10117.0, "Phones": 7848.0, "Tables": 7285.0, "Storage": 6970.0, "Furnishings": 5205.0, "Accessories": 4142.0, "Appliances": 3850.0, "Machines": 3113.0, "Paper": 2088.0, "Envelopes": 1409.0, "Bookcases": 1239.0, "Art": 1217.0, "Labels": 1109.0, "Copiers": 900.0, "Supplies": 130.0, "Fasteners": 125.0}, "South|2017": {"Machines": 13239.0, "Tables": 12498.0, "Phones": 11844.0, "Storage": 10840.0, "Accessories": 9380.0, "Chairs": 6331.0, "Appliances": 5607.0, "Furnishings": 5337.0, "Binders": 4083.0, "Paper": 3923.0, "Bookcases": 3709.0, "Copiers": 2560.0, "Supplies": 1456.0, "Art": 1438.0, "Envelopes": 896.0, "Labels": 288.0, "Fasteners": 105.0}, "South|2018": {"Phones": 21157.0, "Chairs": 15219.0, "Tables": 14106.0, "Binders": 11143.0, "Storage": 10725.0, "Machines": 9945.0, "Accessories": 8062.0, "Appliances": 7948.0, "Copiers": 5360.0, "Bookcases": 5157.0, "Paper": 4740.0, "Furnishings": 3386.0, "Supplies": 2485.0, "Art": 1289.0, "Envelopes": 789.0, "Labels": 546.0, "Fasteners": 107.0}, "South|Todos": {"Phones": 58098.0, "Machines": 53891.0, "Chairs": 44739.0, "Tables": 43830.0, "Binders": 36734.0, "Storage": 35251.0, "Accessories": 26906.0, "Appliances": 19525.0, "Furnishings": 17063.0, "Paper": 13892.0, "Bookcases": 10899.0, "Copiers": 9300.0, "Supplies": 8319.0, "Art": 4510.0, "Envelopes": 3346.0, "Labels": 2344.0, "Fasteners": 503.0}, "West|2015": {"Phones": 29527.0, "Chairs": 21212.0, "Tables": 17758.0, "Storage": 15315.0, "Binders": 12899.0, "Supplies": 9187.0, "Accessories": 8704.0, "Bookcases": 6545.0, "Paper": 5268.0, "Furnishings": 4372.0, "Appliances": 3603.0, "Machines": 3500.0, "Art": 3219.0, "Copiers": 3000.0, "Labels": 876.0, "Envelopes": 646.0, "Fasteners": 277.0}, "West|2016": {"Chairs": 22620.0, "Phones": 18540.0, "Storage": 15880.0, "Tables": 12370.0, "Accessories": 10676.0, "Bookcases": 8670.0, "Machines": 8372.0, "Appliances": 7725.0, "Furnishings": 7530.0, "Copiers": 7510.0, "Paper": 5226.0, "Binders": 3764.0, "Art": 2035.0, "Envelopes": 1355.0, "Labels": 987.0, "Supplies": 309.0, "Fasteners": 140.0}, "West|2017": {"Chairs": 30744.0, "Tables": 26516.0, "Phones": 25359.0, "Accessories": 15446.0, "Machines": 14794.0, "Storage": 13041.0, "Binders": 12108.0, "Bookcases": 8217.0, "Furnishings": 7764.0, "Copiers": 6500.0, "Supplies": 6440.0, "Paper": 6423.0, "Appliances": 5001.0, "Envelopes": 1559.0, "Labels": 1214.0, "Art": 1096.0, "Fasteners": 250.0}, "West|2018": {"Copiers": 29460.0, "Binders": 26402.0, "Accessories": 25806.0, "Chairs": 25447.0, "Storage": 25021.0, "Phones": 24433.0, "Tables": 24372.0, "Machines": 15778.0, "Appliances": 13468.0, "Bookcases": 11888.0, "Furnishings": 9322.0, "Paper": 9297.0, "Art": 2668.0, "Supplies": 2042.0, "Labels": 1937.0, "Envelopes": 546.0, "Fasteners": 243.0}, "West|Todos": {"Chairs": 100023.0, "Phones": 97859.0, "Tables": 81016.0, "Storage": 69256.0, "Accessories": 60632.0, "Binders": 55174.0, "Copiers": 46469.0, "Machines": 42444.0, "Bookcases": 35321.0, "Appliances": 29797.0, "Furnishings": 28988.0, "Paper": 26214.0, "Supplies": 17979.0, "Art": 9018.0, "Labels": 5013.0, "Envelopes": 4107.0, "Fasteners": 909.0}, "Todas|2015": {"Phones": 77226.0, "Chairs": 77046.0, "Machines": 62023.0, "Storage": 49198.0, "Tables": 45758.0, "Binders": 43263.0, "Accessories": 23766.0, "Bookcases": 20037.0, "Appliances": 15161.0, "Supplies": 14336.0, "Paper": 14333.0, "Furnishings": 13637.0, "Copiers": 10850.0, "Art": 5898.0, "Envelopes": 3845.0, "Labels": 2825.0, "Fasteners": 655.0}, "Todas|2016": {"Chairs": 70655.0, "Phones": 67871.0, "Storage": 43321.0, "Accessories": 40444.0, "Bookcases": 37477.0, "Binders": 36050.0, "Tables": 35397.0, "Machines": 27764.0, "Copiers": 26179.0, "Appliances": 23228.0, "Furnishings": 20525.0, "Paper": 14665.0, "Art": 6092.0, "Envelopes": 4448.0, "Labels": 2885.0, "Supplies": 1891.0, "Fasteners": 545.0}, "Todas|2017": {"Chairs": 81930.0, "Phones": 78000.0, "Tables": 60762.0, "Storage": 58752.0, "Machines": 55907.0, "Binders": 48995.0, "Copiers": 46319.0, "Accessories": 41735.0, "Furnishings": 26845.0, "Bookcases": 26275.0, "Appliances": 26017.0, "Paper": 20326.0, "Supplies": 14242.0, "Art": 5891.0, "Envelopes": 4457.0, "Labels": 2793.0, "Fasteners": 946.0}, "Todas|2018": {"Phones": 104686.0, "Chairs": 93191.0, "Binders": 71721.0, "Storage": 68073.0, "Copiers": 62899.0, "Tables": 60894.0, "Accessories": 58241.0, "Machines": 43545.0, "Appliances": 40213.0, "Bookcases": 30024.0, "Furnishings": 28205.0, "Paper": 27505.0, "Supplies": 15952.0, "Art": 8826.0, "Labels": 3845.0, "Envelopes": 3379.0, "Fasteners": 855.0}, "Todas|Todos": {"Phones": 327782.0, "Chairs": 322823.0, "Storage": 219343.0, "Tables": 202811.0, "Binders": 200029.0, "Machines": 189239.0, "Accessories": 164187.0, "Copiers": 146248.0, "Bookcases": 113813.0, "Appliances": 104618.0, "Furnishings": 89212.0, "Paper": 76828.0, "Supplies": 46420.0, "Art": 26705.0, "Envelopes": 16128.0, "Labels": 12348.0, "Fasteners": 3002.0}}, "estados": {"Central": [{"estado": "Texas", "receita": 168573.0}, {"estado": "Illinois", "receita": 79237.0}, {"estado": "Michigan", "receita": 76136.0}, {"estado": "Indiana", "receita": 48718.0}, {"estado": "Wisconsin", "receita": 31173.0}], "East": [{"estado": "New York", "receita": 306361.0}, {"estado": "Pennsylvania", "receita": 116277.0}, {"estado": "Ohio", "receita": 75130.0}, {"estado": "New Jersey", "receita": 34611.0}, {"estado": "Massachusetts", "receita": 28634.0}], "South": [{"estado": "Florida", "receita": 88437.0}, {"estado": "Virginia", "receita": 70637.0}, {"estado": "North Carolina", "receita": 55166.0}, {"estado": "Georgia", "receita": 48219.0}, {"estado": "Kentucky", "receita": 36458.0}], "West": [{"estado": "California", "receita": 446306.0}, {"estado": "Washington", "receita": 135207.0}, {"estado": "Arizona", "receita": 35273.0}, {"estado": "Colorado", "receita": 31842.0}, {"estado": "Oregon", "receita": 17284.0}]}, "ship": {"prazo": {"First Class": 2.2, "Same Day": 0.0, "Second Class": 3.2, "Standard Class": 5.0}, "n": {"Standard Class": 5859, "Second Class": 1902, "First Class": 1501, "Same Day": 538}}, "segmix": {"Central": {"Consumer": 52.2, "Corporate": 29.0, "Home Office": 18.8}, "East": {"Consumer": 51.8, "Corporate": 30.5, "Home Office": 17.6}, "South": {"Consumer": 52.0, "Corporate": 31.3, "Home Office": 16.7}, "West": {"Consumer": 52.2, "Corporate": 30.0, "Home Office": 17.8}}, "anos": [2015, 2016, 2017, 2018], "subcatmap": {"Bookcases": "Furniture", "Chairs": "Furniture", "Labels": "Office Supplies", "Tables": "Furniture", "Storage": "Office Supplies", "Furnishings": "Furniture", "Art": "Office Supplies", "Phones": "Technology", "Binders": "Office Supplies", "Appliances": "Office Supplies", "Paper": "Office Supplies", "Accessories": "Technology", "Envelopes": "Office Supplies", "Fasteners": "Office Supplies", "Supplies": "Office Supplies", "Machines": "Technology", "Copiers": "Technology"}};
+const RCOL = {West:"#0f2b46",East:"#3d6b96",Central:"#6b4c7a",South:"#8a6a2f"};
+const RNOME = {West:"Oeste",East:"Leste",Central:"Centro",South:"Sul",Todas:"Todas as regiões"};
+const REGS = ["West","East","Central","South"];
+const CCOL = {Technology:"#0f2b46",Furniture:"#3d6b96","Office Supplies":"#1c7a4f"};
+const CNOME = {Technology:"Tecnologia",Furniture:"Móveis","Office Supplies":"Material de escritório"};
+const SCOL = {Consumer:"#0f2b46",Corporate:"#3d6b96","Home Office":"#8a6a2f"};
+const $ = id => document.getElementById(id);
+const fmtUS = v => "US$ " + Math.round(v).toLocaleString("pt-BR");
+const fmtN = v => Math.round(v).toLocaleString("pt-BR");
+const fmtD1 = v => (Math.round(v*10)/10).toLocaleString("pt-BR",{minimumFractionDigits:1,maximumFractionDigits:1});
+const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");
+function hbar(el, items, fmt){
+  const max = Math.max.apply(null, items.map(i=>i.value).concat([0])) || 1;
+  el.innerHTML = items.map(i=>{
+    const w = (i.value/max*100).toFixed(1);
+    return '<div class="bar-row"><div class="bar-lb" title="'+esc(i.label)+'">'+esc(i.label)+'</div>'+
+      '<div class="bar-tr"><div class="bar-fl" style="width:'+w+'%;background:'+i.color+'"></div></div>'+
+      '<div class="bar-vl">'+fmt(i.value)+'</div></div>';
+  }).join("");
+}
+function linha(el, legEl, series, xs){
+  const W=660,H=300,pl=56,pr=70,pt=18,pb=34;
+  let max=0; series.forEach(s=>s.pts.forEach(p=>{if(p>max)max=p;})); max=max||1; max*=1.12;
+  const X=i=>pl+(W-pl-pr)*(xs.length===1?0.5:i/(xs.length-1));
+  const Y=v=>pt+(H-pt-pb)*(1-v/max);
+  let g="";
+  for(let k=0;k<=4;k++){const v=max*k/4,y=Y(v);
+    g+='<line x1="'+pl+'" y1="'+y+'" x2="'+(W-pr)+'" y2="'+y+'" stroke="#e8ecf1" stroke-dasharray="4 3"/>'+
+       '<text x="'+(pl-8)+'" y="'+(y+4)+'" text-anchor="end" font-size="11" fill="#606c7c">'+Math.round(v/1000)+'K</text>';}
+  xs.forEach((x,i)=>{g+='<text x="'+X(i)+'" y="'+(H-10)+'" text-anchor="middle" font-size="12" fill="#606c7c">'+x+'</text>';});
+  let paths="";
+  series.forEach(s=>{
+    const d=s.pts.map((p,i)=>(i?"L":"M")+X(i).toFixed(1)+" "+Y(p).toFixed(1)).join(" ");
+    paths+='<path d="'+d+'" fill="none" stroke="'+s.color+'" stroke-width="'+(s.w||2.2)+'"/>';
+    s.pts.forEach((p,i)=>{paths+='<circle cx="'+X(i)+'" cy="'+Y(p)+'" r="4" fill="'+s.color+'"/>';});
+    const li=s.pts.length-1;
+    if(s.pts.length>1) paths+='<text x="'+(X(li)+8)+'" y="'+(Y(s.pts[li])+4)+'" font-size="12" font-weight="700" fill="'+s.color+'">'+s.rotulo+'</text>';
+  });
+  el.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto" role="img">'+g+paths+'</svg>';
+  legEl.innerHTML=series.map(s=>'<span><i style="background:'+s.color+'"></i>'+esc(s.nome)+'</span>').join("");
+}
+function filtros(){return {r:$("f-reg").value, c:$("f-cat").value, a:$("f-ano").value};}
+function kpis(f){
+  const k = DADOS.cubo[f.r+"|"+f.c+"|"+f.a];
+  const tkt = k.pedidos? k.receita/k.pedidos : 0;
+  const rec = k.clientes? k.pedidos/k.clientes : 0;
+  const cards = [
+    {lb:"Receita", vl:fmtUS(k.receita), sb:fmtN(k.linhas)+" linhas vendidas"},
+    {lb:"Pedidos", vl:fmtN(k.pedidos), sb:fmtN(k.clientes)+" clientes"},
+    {lb:"Clientes", vl:fmtN(k.clientes), sb:fmtD1(rec)+" pedidos por cliente"},
+    {lb:"Tíquete / pedido", vl:fmtUS(tkt), sb:"mediana geral US$ 54"},
+    {lb:"Recompra", vl:fmtD1(rec)+"x", sb:"pedidos por cliente"}
+  ];
+  $("kpis").innerHTML = cards.map(x=>'<div class="kpi"><div class="lb">'+x.lb+'</div><div class="vl">'+x.vl+'</div><div class="sb">'+x.sb+'</div></div>').join("");
+}
+function evolucao(f){
+  if(f.a==="Todos"){
+    const series = REGS.map(r=>{
+      const s = DADOS.evolucao[r+"|"+f.c]||{};
+      return {nome:RNOME[r], color:RCOL[r], pts:DADOS.anos.map(a=>s[String(a)]||0),
+              rotulo:fmtUS(s[String(DADOS.anos[DADOS.anos.length-1])]||0), w:f.r===r||f.r==="Todas"?2.6:1.6};
+    });
+    linha($("ch-evolucao"), $("leg-evolucao"), series, DADOS.anos);
+    $("t-evolucao").textContent = "Receita cai em 2016 e acelera até 2018";
+  } else {
+    hbar($("ch-evolucao"), REGS.map(r=>({label:RNOME[r], color:RCOL[r],
+      value:(DADOS.cubo[r+"|"+f.c+"|"+f.a]||{receita:0}).receita})).sort((a,b)=>a.value-b.value), fmtUS);
+    $("leg-evolucao").innerHTML = "<span>Receita de "+f.a+" por região em US$</span>";
+    $("t-evolucao").textContent = "Receita por região em "+f.a;
+  }
+}
+function categoria(f){
+  const cats = Object.keys(CCOL).filter(c=>f.c==="Todas"||f.c===c);
+  hbar($("ch-categoria"), cats.map(c=>({label:CNOME[c], color:CCOL[c],
+    value:(DADOS.cubo[f.r+"|"+c+"|"+f.a]||{receita:0}).receita})).sort((a,b)=>a.value-b.value), fmtUS);
+}
+function funil(f){
+  const rows = REGS.map(r=>{
+    const k = DADOS.cubo[r+"|"+f.c+"|"+f.a]||{receita:0,pedidos:0,clientes:0,linhas:0};
+    return {r:r, receita:k.receita, pedidos:k.pedidos, clientes:k.clientes,
+      rpc:k.clientes?k.pedidos/k.clientes:0, tkt:k.pedidos?k.receita/k.pedidos:0};
+  }).sort((a,b)=>b.receita-a.receita);
+  $("tb-funil").innerHTML = rows.map(x=>'<tr class="'+(f.r===x.r?"dest":"")+'"><td>'+RNOME[x.r]+'</td>'+
+    '<td class="num">'+fmtUS(x.receita)+'</td><td class="num">'+fmtN(x.pedidos)+'</td>'+
+    '<td class="num">'+fmtN(x.clientes)+'</td><td class="num">'+fmtD1(x.rpc)+'</td>'+
+    '<td class="num">'+fmtUS(x.tkt)+'</td></tr>').join("");
+  hbar($("ch-recompra"), rows.slice().sort((a,b)=>a.rpc-b.rpc).map(x=>({label:RNOME[x.r], color:RCOL[x.r], value:x.rpc})), fmtD1);
+  hbar($("ch-tiquete"), rows.slice().sort((a,b)=>a.tkt-b.tkt).map(x=>({label:RNOME[x.r], color:"#94A3B8", value:x.tkt})), fmtUS);
+}
+function subcat(f){
+  const m = DADOS.subcat[f.r+"|"+f.a]||{};
+  const sm = DADOS.subcatmap||{};
+  const itens = Object.keys(m).filter(s=>f.c==="Todas"||sm[s]===f.c)
+    .map(s=>({label:s, color:f.c==="Todas"?"#0f2b46":CCOL[f.c], value:m[s]}))
+    .sort((a,b)=>b.value-a.value).slice(0,8).sort((a,b)=>a.value-b.value);
+  hbar($("ch-subcat"), itens, fmtUS);
+}
+function estados(f){
+  if(f.r==="Todas"){
+    const itens = REGS.map(r=>{
+      const tot = DADOS.estados[r].reduce((s,e)=>s+e.receita,0);
+      const top2 = (DADOS.estados[r][0].receita+DADOS.estados[r][1].receita)/tot*100;
+      return {label:RNOME[r]+" · "+DADOS.estados[r][0].estado+"+"+DADOS.estados[r][1].estado, color:RCOL[r], value:top2};
+    }).sort((a,b)=>a.value-b.value);
+    hbar($("ch-estados"), itens, v=>fmtD1(v)+"%");
+    $("t-estados").textContent = "Top 2 estados concentram até 82% da região";
+  } else {
+    const tot = DADOS.estados[f.r].reduce((s,e)=>s+e.receita,0);
+    hbar($("ch-estados"), DADOS.estados[f.r].slice().sort((a,b)=>a.receita-b.receita).map(e=>({label:e.estado, color:RCOL[f.r], value:e.receita})), fmtUS);
+    const top2 = (DADOS.estados[f.r][0].receita+DADOS.estados[f.r][1].receita)/tot*100;
+    $("t-estados").textContent = "Top 2 estados: "+fmtD1(top2)+"% do "+RNOME[f.r];
+  }
+}
+function estaticos(){
+  const rows = REGS.map(r=>{
+    const m = DADOS.segmix[r];
+    const tot = m.Consumer+m.Corporate+m["Home Office"];
+    return {r:r, segs:[{n:"Consumidor",v:m.Consumer,c:SCOL.Consumer},{n:"Corporativo",v:m.Corporate,c:SCOL.Corporate},{n:"Home office",v:m["Home Office"],c:SCOL["Home Office"]}], tot:tot};
+  });
+  $("ch-segmix").innerHTML = rows.map(x=>'<div class="stack-lb">'+RNOME[x.r]+'</div><div class="stack">'+
+    x.segs.map(s=>'<div style="width:'+(s.v/x.tot*100).toFixed(1)+'%;background:'+s.c+'" title="'+s.n+' '+fmtD1(s.v)+'%">').join("")+'</div>').join("");
+  $("leg-segmix").innerHTML = ["Consumer|Consumidor","Corporate|Corporativo","Home Office|Home office"].map(p=>{
+    const k=p.split("|"); return '<span><i style="background:'+SCOL[k[0]]+'"></i>'+k[1]+'</span>';}).join("")+
+    "<span>Consumidor ~52% em toda parte</span>";
+  const sk = Object.keys(DADOS.ship.prazo);
+  hbar($("ch-ship"), sk.map(k=>({label:k+" ("+fmtN(DADOS.ship.n[k])+")", color:"#0f2b46", value:DADOS.ship.prazo[k]})).sort((a,b)=>a.value-b.value), v=>fmtD1(v)+" dias");
+}
+function insight(f){
+  const k = DADOS.cubo[f.r+"|"+f.c+"|"+f.a];
+  const tkt = k.pedidos?k.receita/k.pedidos:0, rec = k.clientes?k.pedidos/k.clientes:0;
+  const desc = (f.r==="Todas"?"Todas as regiões":RNOME[f.r])+" · "+(f.c==="Todas"?"todas as categorias":CNOME[f.c])+" · "+(f.a==="Todos"?"2015–2018":f.a);
+  $("insight-dinamico").textContent = "Com os filtros atuais ("+desc+"): "+fmtUS(k.receita)+" em "+fmtN(k.pedidos)+
+    " pedidos de "+fmtN(k.clientes)+" clientes — tíquete "+fmtUS(tkt)+", recompra "+fmtD1(rec)+"x.";
+}
+function update(){const f=filtros();kpis(f);evolucao(f);categoria(f);funil(f);subcat(f);estados(f);insight(f);}
+["f-reg","f-cat","f-ano"].forEach(id=>$(id).addEventListener("change",update));
+$("f-limpar").addEventListener("click",()=>{$("f-reg").value="Todas";$("f-cat").value="Todas";$("f-ano").value="Todos";update();});
+estaticos(); update();
+</script>
+</body>
+</html>
